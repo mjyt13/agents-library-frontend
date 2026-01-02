@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import type { AudioContent } from '@/core/models/audioContent'
 
-const props = defineProps<{
+defineProps<{
   audioContent: AudioContent[]
 }>()
 
