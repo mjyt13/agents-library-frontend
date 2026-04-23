@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { getPhrase } from '@/interface/scripts/getPhrase'
-import { phrases } from '@/interface/mockData/phrases'
+import { phrases } from '@/interface/data/phrases'
 import { getPicture } from '@/interface/scripts/getPicture'
-import { pictures } from '@/interface/mockData/pictures'
+import { pictures } from '@/interface/data/pictures'
 
 interface Props {
   imageUrl?: string
