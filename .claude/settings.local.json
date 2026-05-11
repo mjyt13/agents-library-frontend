@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"d:\\\\\\\\приколы\\(не монтаж и не учеба\\)\\\\\\\\agents-library-frontend\")",
+      "Bash(ls -la \"d:\\\\\\\\приколы\\(не монтаж и не учеба\\)\\\\\\\\agents-library-frontend\\\\\\\\src\")",
+      "Bash(ls -la \"d:\\\\\\\\приколы\\(не монтаж и не учеба\\)\\\\\\\\agents-library-frontend\\\\\\\\src\\\\\\\\router\")",
+      "Bash(ls -la \"d:\\\\\\\\приколы\\(не монтаж и не учеба\\)\\\\\\\\agents-library-frontend\\\\\\\\src\\\\\\\\interface\")",
+      "Bash(ls -la \"d:\\\\\\\\приколы\\(не монтаж и не учеба\\)\\\\\\\\agents-library-frontend\\\\\\\\src\\\\\\\\components\")",
+      "Bash(find \"d:\\\\\\\\приколы\\(не монтаж и не учеба\\)\\\\\\\\agents-library-frontend\\\\\\\\src\" -maxdepth 3 -type d)",
+      "Bash(ls -la \"d:\\\\\\\\приколы\\(не монтаж и не учеба\\)\\\\\\\\agents-library-frontend\\\\\\\\src\\\\\\\\interface\\\\\\\\mockData\")"
+    ]
+  }
+}

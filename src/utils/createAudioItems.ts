@@ -4,13 +4,14 @@ export const createAudioItems = (
   categoryName: string,
   basePath: string,
   startFrom: number = 1,
+  extension: 'wav' | 'ogg' | 'oga' = 'wav',
 ): Array<{ id: string; title: string; url: string }> => {
   return Array.from({ length: count }, (_, i) => {
     const num = (i + startFrom).toString().padStart(2, '0')
     return {
       id: `${prefix}_${num}`,
       title: `${categoryName} ${i + startFrom}`,
-      url: `${basePath}/${prefix}_${num}.wav`,
+      url: `${basePath}/${prefix}_${num}.${extension}`,
     }
   })
 }

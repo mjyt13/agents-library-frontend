@@ -6,39 +6,31 @@ defineProps<{
   audioContent: AudioContent[]
 }>()
 
-// Состояние для отслеживания открытых/закрытых секций (все закрыты по умолчанию)
 const openSections = ref<Record<string, boolean>>({})
 
-// Функция для переключения состояния секции
 const toggleSection = (sectionId: string) => {
   openSections.value[sectionId] = !openSections.value[sectionId]
 }
 
-// Проверка, открыта ли секция
-const isSectionOpen = (sectionId: string): boolean => {
-  return openSections.value[sectionId] ?? false
-}
+const isSectionOpen = (sectionId: string): boolean => openSections.value[sectionId] ?? false
 </script>
 
 <template>
   <div class="audioContent">
-    <div class="audioItems" :key="audioGroup.id" v-for="audioGroup in audioContent">
+    <div v-for="audioGroup in audioContent" :key="audioGroup.id" class="audioItems">
       <button
         class="audioSectionHeader"
-        @click="toggleSection(audioGroup.id)"
         :aria-expanded="isSectionOpen(audioGroup.id)"
+        @click="toggleSection(audioGroup.id)"
       >
         <h3>{{ audioGroup.name }}</h3>
-        <span class="toggleIcon" :class="{ open: isSectionOpen(audioGroup.id) }">▼</span>
+        <span class="toggleIcon" :class="isSectionOpen(audioGroup.id) ? 'open' : ''">▼</span>
       </button>
-      <div
-        class="audioSectionContent"
-        :class="{ open: isSectionOpen(audioGroup.id) }"
-        v-show="isSectionOpen(audioGroup.id)"
-      >
-        <div class="audioItem" :key="audio.id" v-for="audio in audioGroup.audioItems">
+
+      <div v-if="isSectionOpen(audioGroup.id)" class="audioSectionContent open">
+        <div v-for="audio in audioGroup.audioItems" :key="audio.id" class="audioItem">
           <p class="audioTitle">{{ audio.title }}</p>
-          <audio :src="audio.url" class="audioPlayer" controls></audio>
+          <audio :src="audio.url" class="audioPlayer" controls preload="none"></audio>
         </div>
       </div>
     </div>
@@ -58,9 +50,9 @@ const isSectionOpen = (sectionId: string): boolean => {
 .audioItems {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   border: 1px solid #ddd;
   border-radius: 8px;
-  overflow: hidden;
   background-color: #f9f9f9;
   transition: all 0.3s ease;
 }
@@ -71,15 +63,15 @@ const isSectionOpen = (sectionId: string): boolean => {
 
 .audioSectionHeader {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: 1rem 1.5rem;
-  background-color: #fff;
   border: none;
+  background-color: #fff;
   cursor: pointer;
-  transition: background-color 0.2s ease;
   text-align: left;
+  transition: background-color 0.2s ease;
 }
 
 .audioSectionHeader:hover {
@@ -96,8 +88,8 @@ const isSectionOpen = (sectionId: string): boolean => {
 .toggleIcon {
   font-size: 0.75rem;
   color: #666;
-  transition: transform 0.3s ease;
   user-select: none;
+  transition: transform 0.3s ease;
 }
 
 .toggleIcon.open {
@@ -107,10 +99,10 @@ const isSectionOpen = (sectionId: string): boolean => {
 .audioSectionContent {
   max-height: 0;
   overflow: hidden;
+  padding: 0 1.5rem;
   transition:
     max-height 0.3s ease,
     padding 0.3s ease;
-  padding: 0 1.5rem;
 }
 
 .audioSectionContent.open {
@@ -122,11 +114,11 @@ const isSectionOpen = (sectionId: string): boolean => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1rem;
   margin-bottom: 0.5rem;
-  background-color: #fff;
-  border-radius: 6px;
+  padding: 1rem;
   border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fff;
   transition: box-shadow 0.2s ease;
 }
 
@@ -144,45 +136,8 @@ const isSectionOpen = (sectionId: string): boolean => {
 .audioPlayer {
   width: 100%;
   height: 40px;
-  outline: none;
   border-radius: 4px;
-}
-
-/* Стилизация нативного audio плеера */
-.audioPlayer::-webkit-media-controls-panel {
-  background-color: #f5f5f5;
-}
-
-.audioPlayer::-webkit-media-controls-play-button {
-  background-color: #4a90e2;
-  border-radius: 50%;
-}
-
-.audioPlayer::-webkit-media-controls-play-button:hover {
-  background-color: #a635bd;
-}
-
-.audioPlayer::-webkit-media-controls-current-time-display,
-.audioPlayer::-webkit-media-controls-time-remaining-display {
-  color: #ff0000;
-  font-size: 1.875rem;
-  transition: color 0.3s ease;
-  &:hover {
-    color: #a635bd;
-  }
-}
-
-.audioPlayer::-webkit-media-controls-timeline {
-  background-color: #ddd;
-  border-radius: 2px;
-}
-
-.audioPlayer::-webkit-media-controls-volume-slider {
-  background-color: #4a90e2;
-}
-
-/* Для Firefox */
-.audioPlayer {
+  outline: none;
   filter: grayscale(0%);
 }
 

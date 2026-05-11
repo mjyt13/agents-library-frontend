@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import Professionals from '@/components/Professionals.vue'
+import * as ProfessionalsPageModule from '@/components/ProfessionalsPage.vue'
+
+const ProfessionalsPage = ProfessionalsPageModule.default
 </script>
 
 <template>
   <main>
-    <Professionals />
+    <ProfessionalsPage />
   </main>
 </template>

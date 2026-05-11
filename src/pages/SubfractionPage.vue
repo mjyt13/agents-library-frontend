@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import type { Subfraction } from '@/core/models/subfraction'
-import AudioContent from '@/widgets/AudioContent.vue'
+import type { AudioContent } from '@/core/models/audioContent'
+import * as AudioContentModule from '@/widgets/AudioContent.vue'
+
+const AudioContent = AudioContentModule.default
 
 const props = defineProps<{
   subfraction: Subfraction
@@ -9,14 +12,14 @@ const props = defineProps<{
 }>()
 
 const dataAssets = import.meta.glob('/src/interface/data/**/*', {
-  eager: true,
+  import: 'default',
   query: '?url',
 })
 
-const getAssetUrl = (path: string): string => {
+const getAssetUrl = async (path: string): Promise<string> => {
   const fullPath = `/src/interface/data/${path}`
   const mod = dataAssets[fullPath]
-  if (mod && typeof mod === 'object' && 'default' in mod) return mod.default as string
+  if (typeof mod === 'function') return (await mod()) as string
   return `${import.meta.env.BASE_URL}src/interface/data/${path}`
 }
 
@@ -24,20 +27,37 @@ const currentIndex = ref(0)
 const agent = computed(() => props.subfraction.agents[currentIndex.value])
 const hasMultiple = computed(() => props.subfraction.agents.length > 1)
 
-const previewUrl = computed(() => {
-  const path = agent.value?.photos[0]
-  return path ? getAssetUrl(path) : ''
-})
+const previewUrl = ref('')
+const audioContentWithUrls = ref<AudioContent[]>([])
 
-const audioContentWithUrls = computed(() =>
-  props.subfraction.voiceLines.map((group) => ({
-    ...group,
-    audioItems: group.audioItems.map((item) => ({
-      ...item,
-      url: getAssetUrl(item.url),
-    })),
-  })),
-)
+watchEffect(async (onCleanup) => {
+  let cancelled = false
+  onCleanup(() => {
+    cancelled = true
+  })
+
+  const photoPath = agent.value?.photos[0]
+
+  const [resolvedPreviewUrl, resolvedAudioContent] = await Promise.all([
+    photoPath ? getAssetUrl(photoPath) : Promise.resolve(''),
+    Promise.all(
+      props.subfraction.voiceLines.map(async (group) => ({
+        ...group,
+        audioItems: await Promise.all(
+          group.audioItems.map(async (item) => ({
+            ...item,
+            url: await getAssetUrl(item.url),
+          })),
+        ),
+      })),
+    ),
+  ])
+
+  if (cancelled) return
+
+  previewUrl.value = resolvedPreviewUrl
+  audioContentWithUrls.value = resolvedAudioContent
+})
 
 const prev = () => {
   currentIndex.value =
