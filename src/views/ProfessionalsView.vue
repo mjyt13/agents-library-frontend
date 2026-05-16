@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import * as ProfessionalsPageModule from '@/components/ProfessionalsPage.vue'
-
-const ProfessionalsPage = ProfessionalsPageModule.default
+import FactionPage from '@/components/FactionPage.vue'
+import { professionals } from '@/interface/data/factions/professionals/professionals'
 </script>
 
 <template>
   <main>
-    <ProfessionalsPage />
+    <FactionPage :faction="professionals" />
   </main>
 </template>

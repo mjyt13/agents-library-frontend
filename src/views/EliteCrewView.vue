@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import * as EliteCrewModule from '@/components/EliteCrew.vue'
-
-const EliteCrew = EliteCrewModule.default
+import FactionPage from '@/components/FactionPage.vue'
+import { leet } from '@/interface/data/factions/leet/leet'
 </script>
 
 <template>
   <main>
-    <EliteCrew />
+    <FactionPage :faction="leet" />
   </main>
 </template>

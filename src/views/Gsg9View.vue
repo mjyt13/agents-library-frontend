@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import * as Gsg9FactionModule from '@/components/Gsg9Faction.vue'
-
-const Gsg9Faction = Gsg9FactionModule.default
+import FactionPage from '@/components/FactionPage.vue'
+import { gsg } from '@/interface/data/factions/gsg/gsg'
 </script>
 
 <template>
   <main>
-    <Gsg9Faction />
+    <FactionPage :faction="gsg" />
   </main>
 </template>

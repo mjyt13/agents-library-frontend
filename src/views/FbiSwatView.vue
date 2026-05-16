@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import * as FbiSwatModule from '@/components/FbiSwat.vue'
-
-const FbiSwat = FbiSwatModule.default
+import FactionPage from '@/components/FactionPage.vue'
+import { fbi_swat } from '@/interface/data/factions/fbi_swat/fbi_swat'
 </script>
 
 <template>
   <main>
-    <FbiSwat />
+    <FactionPage :faction="fbi_swat" />
   </main>
 </template>

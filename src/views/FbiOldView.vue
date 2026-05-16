@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import * as FbiOldModule from '@/components/FbiOld.vue'
-
-const FbiOld = FbiOldModule.default
+import FactionPage from '@/components/FactionPage.vue'
+import { fbi_old } from '@/interface/data/factions/fbi_old/fbi_old'
 </script>
 
 <template>
   <main>
-    <FbiOld />
+    <FactionPage :faction="fbi_old" />
   </main>
 </template>

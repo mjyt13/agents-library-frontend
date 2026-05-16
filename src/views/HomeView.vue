@@ -42,6 +42,56 @@
         <strong>GSG-9</strong>
         <span>German faction page with separate audio records and agent preview.</span>
       </RouterLink>
+
+      <RouterLink class="factionCard" to="/gign">
+        <strong>GIGN</strong>
+        <span>French counter-terror voice set with a dedicated default agent and grouped audio lines.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/idf">
+        <strong>IDF</strong>
+        <span>Single-subfraction faction page for browsing Israeli voice lines and default model art.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/phoenix">
+        <strong>Phoenix Connexion</strong>
+        <span>Terrorist faction page with converted OGG lines and a linked default Phoenix preview.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/separatist">
+        <strong>Separatist</strong>
+        <span>Faction page with grouped audio content and a connected default agent image.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/anarchist">
+        <strong>Anarchist</strong>
+        <span>New faction entry for listening through the converted voice pack by subfraction.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/gandarmerie">
+        <strong>Gendarmerie</strong>
+        <span>Male and master counter-terror subfractions with newly linked agent placeholders and audio.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/guerilla">
+        <strong>Guerilla</strong>
+        <span>Expanded terrorist faction with female, male and master voice sets connected to new agents.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/pirate">
+        <strong>Pirate</strong>
+        <span>Dedicated faction page for the pirate voice pack with its default agent preview.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/seal">
+        <strong>SEAL</strong>
+        <span>Faction page with male and master audio sets, ready for future agent art without breaking layout.</span>
+      </RouterLink>
+
+      <RouterLink class="factionCard" to="/seal-frogman">
+        <strong>SEAL Frogman</strong>
+        <span>Separate male and master frogman voice sets with connected agent cards for the new placeholders.</span>
+      </RouterLink>
     </section>
   </main>
 </template>

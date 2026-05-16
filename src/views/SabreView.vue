@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import * as SabrePageModule from '@/components/SabrePage.vue'
-
-const SabrePage = SabrePageModule.default
+import FactionPage from '@/components/FactionPage.vue'
+import { sabre } from '@/interface/data/factions/sabre/sabre'
 </script>
 
 <template>
   <main>
-    <SabrePage />
+    <FactionPage :faction="sabre" />
   </main>
 </template>

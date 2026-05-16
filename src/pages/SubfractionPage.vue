@@ -71,7 +71,8 @@ const next = () => {
 <template>
   <div class="subfractionPage">
     <div class="agentHeader">
-      <img class="agentPreview" :src="previewUrl" :alt="agent?.name || ''" />
+      <img v-if="previewUrl" class="agentPreview" :src="previewUrl" :alt="agent?.name || ''" />
+      <div v-else class="agentPreview agentPreviewPlaceholder">{{ factionName }}</div>
       <div class="agentMeta">
         <h1>{{ agent?.name || '' }} || {{ factionName }}</h1>
       </div>
@@ -112,6 +113,18 @@ const next = () => {
   height: 120px;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+.agentPreviewPlaceholder {
+  display: grid;
+  place-items: center;
+  padding: 0.75rem;
+  border: 1px dashed #ccc;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  text-align: center;
+  color: #666;
+  background: #f6f6f6;
 }
 
 .agentMeta {

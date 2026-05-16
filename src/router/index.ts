@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import SteveView from '@/views/SteveView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,11 +8,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-    },
-    {
-      path: '/steve',
-      name: 'steve',
-      component: SteveView,
     },
     {
       path: '/professionals',
@@ -49,6 +43,56 @@ const router = createRouter({
       path: '/gsg-9',
       name: 'gsg-9',
       component: () => import('@/views/Gsg9View.vue'),
+    },
+    {
+      path: '/anarchist',
+      name: 'anarchist',
+      component: () => import('@/views/AnarchistView.vue'),
+    },
+    {
+      path: '/gign',
+      name: 'gign',
+      component: () => import('@/views/GignView.vue'),
+    },
+    {
+      path: '/idf',
+      name: 'idf',
+      component: () => import('@/views/IdfView.vue'),
+    },
+    {
+      path: '/phoenix',
+      name: 'phoenix',
+      component: () => import('@/views/PhoenixView.vue'),
+    },
+    {
+      path: '/separatist',
+      name: 'separatist',
+      component: () => import('@/views/SeparatistView.vue'),
+    },
+    {
+      path: '/gandarmerie',
+      name: 'gandarmerie',
+      component: () => import('@/views/GandarmerieView.vue'),
+    },
+    {
+      path: '/guerilla',
+      name: 'guerilla',
+      component: () => import('@/views/GuerillaView.vue'),
+    },
+    {
+      path: '/pirate',
+      name: 'pirate',
+      component: () => import('@/views/PirateView.vue'),
+    },
+    {
+      path: '/seal',
+      name: 'seal',
+      component: () => import('@/views/SealView.vue'),
+    },
+    {
+      path: '/seal-frogman',
+      name: 'seal-frogman',
+      component: () => import('@/views/SealFrogmanView.vue'),
     },
   ],
 })

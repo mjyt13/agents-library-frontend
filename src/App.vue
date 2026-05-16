@@ -21,6 +21,16 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/fbi-old">FBI (old)</RouterLink>
         <RouterLink to="/sas">SAS</RouterLink>
         <RouterLink to="/gsg-9">GSG-9</RouterLink>
+        <RouterLink to="/gign">GIGN</RouterLink>
+        <RouterLink to="/idf">IDF</RouterLink>
+        <RouterLink to="/phoenix">Phoenix</RouterLink>
+        <RouterLink to="/separatist">Separatist</RouterLink>
+        <RouterLink to="/anarchist">Anarchist</RouterLink>
+        <RouterLink to="/gandarmerie">Gendarmerie</RouterLink>
+        <RouterLink to="/guerilla">Guerilla</RouterLink>
+        <RouterLink to="/pirate">Pirate</RouterLink>
+        <RouterLink to="/seal">SEAL</RouterLink>
+        <RouterLink to="/seal-frogman">SEAL Frogman</RouterLink>
         <RouterLink to="/steve">Steve</RouterLink>
       </nav>
     </header>
