@@ -6,7 +6,7 @@ import { RouterLink, RouterView } from 'vue-router'
   <div class="appShell">
     <header>
       <RouterLink class="brand" to="/">
-        <img alt="CS2 Agents Library" class="logo" src="@/assets/logo.svg" width="72" height="72" />
+        <img alt="CS2 Agents Library" class="logo" src="@/assets/logo.png" width="72" height="72" />
         <div class="brandText">
           <strong>CS2 Agents Library</strong>
           <span>Фракции, подфракции и голосовые линии агентов</span>
@@ -31,7 +31,6 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/pirate">Pirate</RouterLink>
         <RouterLink to="/seal">SEAL</RouterLink>
         <RouterLink to="/seal-frogman">SEAL Frogman</RouterLink>
-        <RouterLink to="/steve">Steve</RouterLink>
       </nav>
     </header>
 

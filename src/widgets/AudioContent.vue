@@ -13,6 +13,8 @@ const toggleSection = (sectionId: string) => {
 }
 
 const isSectionOpen = (sectionId: string): boolean => openSections.value[sectionId] ?? false
+const isMissingGroup = (audioGroup: AudioContent): boolean =>
+  audioGroup.isMissing === true || audioGroup.audioItems.length === 0
 </script>
 
 <template>
@@ -20,14 +22,19 @@ const isSectionOpen = (sectionId: string): boolean => openSections.value[section
     <div v-for="audioGroup in audioContent" :key="audioGroup.id" class="audioItems">
       <button
         class="audioSectionHeader"
+        :class="isMissingGroup(audioGroup) ? 'missing' : ''"
         :aria-expanded="isSectionOpen(audioGroup.id)"
+        :disabled="isMissingGroup(audioGroup)"
         @click="toggleSection(audioGroup.id)"
       >
         <h3>{{ audioGroup.name }}</h3>
-        <span class="toggleIcon" :class="isSectionOpen(audioGroup.id) ? 'open' : ''">▼</span>
+        <span v-if="isMissingGroup(audioGroup)" class="missingBadge">Нет</span>
+        <span v-else class="toggleIcon" :class="isSectionOpen(audioGroup.id) ? 'open' : ''">▼</span>
       </button>
 
-      <div v-if="isSectionOpen(audioGroup.id)" class="audioSectionContent open">
+      <div v-if="audioGroup.isMissing" class="audioSectionMissing">Нет у этой подфракции</div>
+
+      <div v-else-if="isSectionOpen(audioGroup.id)" class="audioSectionContent open">
         <div v-for="audio in audioGroup.audioItems" :key="audio.id" class="audioItem">
           <p class="audioTitle">{{ audio.title }}</p>
           <audio :src="audio.url" class="audioPlayer" controls preload="none"></audio>
@@ -78,11 +85,29 @@ const isSectionOpen = (sectionId: string): boolean => openSections.value[section
   background-color: #f0f0f0;
 }
 
+.audioSectionHeader.missing {
+  cursor: default;
+  background-color: #fafafa;
+}
+
 .audioSectionHeader h3 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
   color: #333;
+}
+
+.missingBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #8a5a00;
+  background: #fff3d8;
 }
 
 .toggleIcon {
@@ -108,6 +133,13 @@ const isSectionOpen = (sectionId: string): boolean => openSections.value[section
 .audioSectionContent.open {
   max-height: 5000px;
   padding: 1rem 1.5rem;
+}
+
+.audioSectionMissing {
+  padding: 0.9rem 1.5rem 1.1rem;
+  color: #666;
+  font-size: 0.95rem;
+  background: #fcfcfc;
 }
 
 .audioItem {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import type { Subfraction } from '@/core/models/subfraction'
-import type { AudioContent } from '@/core/models/audioContent'
 import * as AudioContentModule from '@/widgets/AudioContent.vue'
+import { buildVoicePages, type VoicePage, type VoicePageId } from '@/utils/buildVoicePages'
 
 const AudioContent = AudioContentModule.default
 
@@ -24,11 +24,24 @@ const getAssetUrl = async (path: string): Promise<string> => {
 }
 
 const currentIndex = ref(0)
+const currentVoicePageId = ref<VoicePageId>(1)
+
 const agent = computed(() => props.subfraction.agents[currentIndex.value])
 const hasMultiple = computed(() => props.subfraction.agents.length > 1)
 
 const previewUrl = ref('')
-const audioContentWithUrls = ref<AudioContent[]>([])
+const voicePages = ref<VoicePage[]>([])
+const currentVoicePage = computed(
+  () => voicePages.value.find((page) => page.id === currentVoicePageId.value) ?? voicePages.value[0] ?? null,
+)
+
+watch(
+  () => props.subfraction.id,
+  () => {
+    currentIndex.value = 0
+    currentVoicePageId.value = 1
+  },
+)
 
 watchEffect(async (onCleanup) => {
   let cancelled = false
@@ -37,16 +50,22 @@ watchEffect(async (onCleanup) => {
   })
 
   const photoPath = agent.value?.photos[0]
+  const organizedPages = buildVoicePages(props.subfraction.voiceLines)
 
-  const [resolvedPreviewUrl, resolvedAudioContent] = await Promise.all([
+  const [resolvedPreviewUrl, resolvedVoicePages] = await Promise.all([
     photoPath ? getAssetUrl(photoPath) : Promise.resolve(''),
     Promise.all(
-      props.subfraction.voiceLines.map(async (group) => ({
-        ...group,
-        audioItems: await Promise.all(
-          group.audioItems.map(async (item) => ({
-            ...item,
-            url: await getAssetUrl(item.url),
+      organizedPages.map(async (page) => ({
+        ...page,
+        groups: await Promise.all(
+          page.groups.map(async (group) => ({
+            ...group,
+            audioItems: await Promise.all(
+              group.audioItems.map(async (item) => ({
+                ...item,
+                url: await getAssetUrl(item.url),
+              })),
+            ),
           })),
         ),
       })),
@@ -56,13 +75,14 @@ watchEffect(async (onCleanup) => {
   if (cancelled) return
 
   previewUrl.value = resolvedPreviewUrl
-  audioContentWithUrls.value = resolvedAudioContent
+  voicePages.value = resolvedVoicePages
 })
 
 const prev = () => {
   currentIndex.value =
     (currentIndex.value - 1 + props.subfraction.agents.length) % props.subfraction.agents.length
 }
+
 const next = () => {
   currentIndex.value = (currentIndex.value + 1) % props.subfraction.agents.length
 }
@@ -86,7 +106,27 @@ const next = () => {
     <p class="agentDescription">{{ agent?.description || '' }}</p>
     <p class="agentComment">{{ agent?.comment || '' }}</p>
 
-    <AudioContent :audio-content="audioContentWithUrls" />
+    <div v-if="voicePages.length" class="voicePages">
+      <div class="voicePageSwitcher">
+        <button
+          v-for="page in voicePages"
+          :key="page.id"
+          :class="page.id === currentVoicePageId ? 'active' : ''"
+          @click="currentVoicePageId = page.id"
+        >
+          {{ page.title }}
+          <span class="voicePageMeta">
+            {{
+              `${page.groups.filter((group) => !group.isMissing).length}/${page.groups.length}`
+            }}
+          </span>
+        </button>
+      </div>
+
+      <p v-if="currentVoicePage" class="voicePageDescription">{{ currentVoicePage.description }}</p>
+
+      <AudioContent v-if="currentVoicePage" :audio-content="currentVoicePage.groups" />
+    </div>
   </div>
 </template>
 
@@ -140,13 +180,6 @@ const next = () => {
   margin: 0;
 }
 
-.agentMeta h2 {
-  font-size: 1.1rem;
-  font-weight: normal;
-  margin: 0;
-  opacity: 0.7;
-}
-
 .carousel {
   display: flex;
   align-items: center;
@@ -172,6 +205,56 @@ const next = () => {
   max-width: 900px;
   font-size: 1rem;
   font-weight: 600;
+  line-height: 1.5;
+}
+
+.voicePages {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.voicePageSwitcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+.voicePageSwitcher button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.voicePageSwitcher button.active {
+  color: #fff;
+  border-color: #222;
+  background: #222;
+}
+
+.voicePageMeta {
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.voicePageDescription {
+  width: 100%;
+  max-width: 800px;
+  margin: 1rem 0 0;
+  color: #666;
   line-height: 1.5;
 }
 </style>

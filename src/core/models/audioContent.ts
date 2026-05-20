@@ -1,31 +1,27 @@
 // content.ts
 /**
- * Модель для отдельного аудиофайла (например, фразы или реплики).
+ * Model for a single audio file such as a voice line.
  */
 export interface AudioItem {
   id: string
   /**
-   * Название реплики (например, "Фраза в начале боя").
+   * Voice line title.
    */
   title: string
   /**
-   * Полный URL-адрес к аудиофайлу.
+   * Full audio file URL.
    */
   url: string
 }
 
 /**
- * Модель для раздела контента (например, "Боевые реплики", "Истории").
+ * Model for a section of grouped voice lines.
  */
 export interface AudioContent {
   id: string
-  /**
-   * Название раздела (например, "Реплики в бою").
-   */
+  canonicalId?: string
   name: string
-
-  /**
-   * Массив всех аудиофайлов, принадлежащих этому разделу.
-   */
+  page?: 1 | 2
+  isMissing?: boolean
   audioItems: AudioItem[]
 }
