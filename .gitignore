@@ -13,6 +13,7 @@ dist
 dist-ssr
 coverage
 *.local
+kubectl*
 
 # Editor directories and files
 .vscode/*
@@ -37,3 +38,6 @@ __screenshots__/
 
 test-results/
 playwright-report/
+
+# Lighthouse
+lighthouse-report/

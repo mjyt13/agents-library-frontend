@@ -1,27 +1,37 @@
-// content.ts
-/**
- * Model for a single audio file such as a voice line.
- */
+export type VoicePageId = 1 | 2 | 3
+
 export interface AudioItem {
   id: string
-  /**
-   * Voice line title.
-   */
   title: string
-  /**
-   * Full audio file URL.
-   */
   url: string
 }
 
-/**
- * Model for a section of grouped voice lines.
- */
-export interface AudioContent {
+export interface AudioGroupMeta {
   id: string
   canonicalId?: string
   name: string
-  page?: 1 | 2
+  page?: VoicePageId
+  isMissing?: boolean
+  itemCount?: number
+}
+
+export interface VoicePageMeta {
+  id: VoicePageId
+  title: string
+  description: string
+  groups: AudioGroupMeta[]
+}
+
+export interface AudioContent {
+  meta: AudioGroupMeta
+  audioItems: Array<() => Promise<AudioItem>>
+}
+
+export interface LegacyAudioContent {
+  id: string
+  canonicalId?: string
+  name: string
+  page?: VoicePageId
   isMissing?: boolean
   audioItems: AudioItem[]
 }

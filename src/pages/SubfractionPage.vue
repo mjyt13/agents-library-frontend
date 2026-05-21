@@ -1,46 +1,145 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from 'vue'
+import type { AudioContent, AudioItem, LegacyAudioContent, VoicePageId, VoicePageMeta } from '@/core/models/audioContent'
 import type { Subfraction } from '@/core/models/subfraction'
 import * as AudioContentModule from '@/widgets/AudioContent.vue'
-import { buildVoicePages, type VoicePage, type VoicePageId } from '@/utils/buildVoicePages'
+import { buildVoicePageMetas, buildVoicePages, toAudioGroupMeta } from '@/utils/buildVoicePages'
 
-const AudioContent = AudioContentModule.default
+const AudioContentWidget = AudioContentModule.default
 
 const props = defineProps<{
   subfraction: Subfraction
   factionName: string
 }>()
 
-const dataAssets = import.meta.glob('/src/interface/data/**/*', {
+const imageAssets = import.meta.glob('/src/interface/data/**/*.{png,jpg,jpeg,webp}', {
   import: 'default',
   query: '?url',
 })
 
-const getAssetUrl = async (path: string): Promise<string> => {
+const audioAssets = import.meta.glob('/src/interface/data/**/*.{wav,ogg,oga}', {
+  import: 'default',
+  query: '?url',
+})
+
+const getImageAssetUrl = async (path: string): Promise<string> => {
   const fullPath = `/src/interface/data/${path}`
-  const mod = dataAssets[fullPath]
+  const mod = imageAssets[fullPath]
+  if (typeof mod === 'function') return (await mod()) as string
+  return `${import.meta.env.BASE_URL}src/interface/data/${path}`
+}
+
+const getAudioAssetUrl = async (path: string): Promise<string> => {
+  const fullPath = `/src/interface/data/${path}`
+  const mod = audioAssets[fullPath]
   if (typeof mod === 'function') return (await mod()) as string
   return `${import.meta.env.BASE_URL}src/interface/data/${path}`
 }
 
 const currentIndex = ref(0)
 const currentVoicePageId = ref<VoicePageId>(1)
+const previewUrl = ref('')
+const currentAudioGroups = ref<AudioContent[]>([])
+const isVoicePageLoading = ref(false)
+
+const pageCache = new Map<string, AudioContent[]>()
 
 const agent = computed(() => props.subfraction.agents[currentIndex.value])
 const hasMultiple = computed(() => props.subfraction.agents.length > 1)
+const voicePages = computed<VoicePageMeta[]>(() => {
+  if (props.subfraction.voicePages?.length) return props.subfraction.voicePages
+  return buildVoicePageMetas(props.subfraction.voiceLines ?? [])
+})
 
-const previewUrl = ref('')
-const voicePages = ref<VoicePage[]>([])
 const currentVoicePage = computed(
   () => voicePages.value.find((page) => page.id === currentVoicePageId.value) ?? voicePages.value[0] ?? null,
 )
+
+const createLegacyAudioContent = (
+  group: LegacyAudioContent,
+): AudioContent => ({
+  meta: {
+    ...toAudioGroupMeta(group),
+    itemCount: group.audioItems.length,
+  },
+  audioItems: group.audioItems.map(
+    (item): (() => Promise<AudioItem>) =>
+      async () => ({
+        ...item,
+        url: item.url.startsWith('http') ? item.url : await getAudioAssetUrl(item.url),
+      }),
+  ),
+})
+
+const normalizeAudioContent = (groups: AudioContent[]): AudioContent[] =>
+  groups.map((group) => ({
+    meta: group.meta,
+    audioItems: group.audioItems.map(
+      (loadItem): (() => Promise<AudioItem>) =>
+        async () => {
+          const item = await loadItem()
+          if (item.url.startsWith('http') || item.url.startsWith('blob:') || item.url.startsWith('data:')) {
+            return item
+          }
+
+          return {
+            ...item,
+            url: await getAudioAssetUrl(item.url),
+          }
+        },
+    ),
+  }))
+
+const loadLegacyVoicePage = async (pageId: VoicePageId): Promise<AudioContent[]> => {
+  const page = buildVoicePages(props.subfraction.voiceLines ?? []).find((entry) => entry.id === pageId)
+  return (page?.groups ?? []).map(createLegacyAudioContent)
+}
+
+const loadVoicePage = async (pageId: VoicePageId): Promise<AudioContent[]> => {
+  if (props.subfraction.loadVoicePage) {
+    const groups = await props.subfraction.loadVoicePage(pageId)
+    return normalizeAudioContent(groups)
+  }
+  return loadLegacyVoicePage(pageId)
+}
 
 watch(
   () => props.subfraction.id,
   () => {
     currentIndex.value = 0
-    currentVoicePageId.value = 1
+    currentVoicePageId.value = voicePages.value[0]?.id ?? 1
+    currentAudioGroups.value = []
   },
+)
+
+watch(
+  [() => props.subfraction.id, currentVoicePageId],
+  async ([subfractionId, pageId], _previous, onCleanup) => {
+    let cancelled = false
+    onCleanup(() => {
+      cancelled = true
+    })
+
+    // currentVoicePageId.value = pageId || voicePages.value[0]?.id || 1
+    const cacheKey = `${subfractionId}:${pageId}`
+    const cached = pageCache.get(cacheKey)
+    if (cached) {
+      currentAudioGroups.value = cached
+      return
+    }
+
+    isVoicePageLoading.value = true
+
+    try {
+      const loadedGroups = await loadVoicePage(pageId)
+      if (cancelled) return
+      pageCache.set(cacheKey, loadedGroups)
+      currentAudioGroups.value = loadedGroups
+    } finally {
+      if (!cancelled) isVoicePageLoading.value = false
+    }
+  },
+  { immediate: true },
 )
 
 watchEffect(async (onCleanup) => {
@@ -50,32 +149,9 @@ watchEffect(async (onCleanup) => {
   })
 
   const photoPath = agent.value?.photos[0]
-  const organizedPages = buildVoicePages(props.subfraction.voiceLines)
-
-  const [resolvedPreviewUrl, resolvedVoicePages] = await Promise.all([
-    photoPath ? getAssetUrl(photoPath) : Promise.resolve(''),
-    Promise.all(
-      organizedPages.map(async (page) => ({
-        ...page,
-        groups: await Promise.all(
-          page.groups.map(async (group) => ({
-            ...group,
-            audioItems: await Promise.all(
-              group.audioItems.map(async (item) => ({
-                ...item,
-                url: await getAssetUrl(item.url),
-              })),
-            ),
-          })),
-        ),
-      })),
-    ),
-  ])
-
+  const resolvedPreviewUrl = photoPath ? await getImageAssetUrl(photoPath) : ''
   if (cancelled) return
-
   previewUrl.value = resolvedPreviewUrl
-  voicePages.value = resolvedVoicePages
 })
 
 const prev = () => {
@@ -116,16 +192,15 @@ const next = () => {
         >
           {{ page.title }}
           <span class="voicePageMeta">
-            {{
-              `${page.groups.filter((group) => !group.isMissing).length}/${page.groups.length}`
-            }}
+            {{ `${page.groups.filter((group) => !group.isMissing).length}/${page.groups.length}` }}
           </span>
         </button>
       </div>
 
       <p v-if="currentVoicePage" class="voicePageDescription">{{ currentVoicePage.description }}</p>
+      <p v-if="isVoicePageLoading" class="voicePageLoading">Подождите...</p>
 
-      <AudioContent v-if="currentVoicePage" :audio-content="currentVoicePage.groups" />
+      <AudioContentWidget v-else-if="currentAudioGroups.length" :audio-content="currentAudioGroups" />
     </div>
   </div>
 </template>
@@ -250,7 +325,8 @@ const next = () => {
   font-size: 0.9rem;
 }
 
-.voicePageDescription {
+.voicePageDescription,
+.voicePageLoading {
   width: 100%;
   max-width: 800px;
   margin: 1rem 0 0;

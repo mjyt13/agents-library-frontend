@@ -1,4 +1,4 @@
-import type { AudioContent, AudioItem } from '@/core/models/audioContent'
+import type { AudioItem, LegacyAudioContent } from '@/core/models/audioContent'
 
 const splitCamelOrSnake = (value: string): string[] =>
   value
@@ -36,7 +36,7 @@ export const createAudioContentFromFiles = (
   files: string[],
   basePath: string,
   categoryNames: Record<string, string> = {},
-): AudioContent[] => {
+): LegacyAudioContent[] => {
   const grouped = new Map<string, string[]>()
 
   for (const fileName of files) {

@@ -1,7 +1,7 @@
 import type { Subfraction } from '@/core/models/subfraction'
 import { SubfractionType } from '@/core/models/subfraction'
 import { trapper } from '@/interface/data/agents/trapper/trapper'
-import { createAudioContentFromFiles } from '@/utils/createAudioContentFromFiles'
+import { createAudioSourceFromFiles } from '@/utils/createSubfractionAudioSource'
 
 const basePath = 'factions/guerilla/fem/audio'
 const audioModules = {
@@ -10,10 +10,12 @@ const audioModules = {
   ...import.meta.glob('/src/interface/data/factions/guerilla/fem/audio/*.oga'),
 }
 const audioFiles = Object.keys(audioModules).map((path) => path.split('/').pop() ?? '')
+const audioSource = createAudioSourceFromFiles(audioFiles, basePath)
 
 export const guerilla_fem: Subfraction = {
   id: 'guerilla_fem',
   name: SubfractionType.FEMALE,
   agents: [trapper],
-  voiceLines: createAudioContentFromFiles(audioFiles, basePath),
+  ...audioSource,
 }
+

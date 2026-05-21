@@ -1,5 +1,5 @@
 import type { Agent } from './agent'
-import type { AudioContent } from './audioContent'
+import type { AudioContent, LegacyAudioContent, VoicePageId, VoicePageMeta } from './audioContent'
 
 export const SubfractionType = {
   MALE: 'Male',
@@ -29,5 +29,7 @@ export interface Subfraction {
   id: string
   name: SubfractionType
   agents: Agent[]
-  voiceLines: AudioContent[]
+  voiceLines?: LegacyAudioContent[]
+  voicePages?: VoicePageMeta[]
+  loadVoicePage?: (pageId: VoicePageId) => Promise<AudioContent[]>
 }

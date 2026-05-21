@@ -1,12 +1,16 @@
-import type { AudioContent, AudioItem } from '@/core/models/audioContent'
-
-export type VoicePageId = 1 | 2
+import type {
+  AudioGroupMeta,
+  AudioItem,
+  LegacyAudioContent,
+  VoicePageId,
+  VoicePageMeta,
+} from '@/core/models/audioContent'
 
 export interface VoicePage {
   id: VoicePageId
   title: string
   description: string
-  groups: AudioContent[]
+  groups: LegacyAudioContent[]
 }
 
 interface VoiceCategoryConfig {
@@ -44,47 +48,50 @@ const pageOneCategories: VoiceCategoryConfig[] = [
 
 const pageTwoCategories: VoiceCategoryConfig[] = [
   { id: 'attack', name: 'Attack', page: 2, alwaysShow: true },
-  { id: 'blinded', name: 'Blinded', page: 2, alwaysShow: true },
-  { id: 'bomb_planted', name: 'Bomb planted', page: 2, alwaysShow: true },
-  { id: 'countdown', name: 'Countdown', page: 2, alwaysShow: true },
   { id: 'covering', name: 'Covering', page: 2, alwaysShow: true },
-  { id: 'death', name: 'Death', page: 2, alwaysShow: true },
   { id: 'disagree', name: 'Disagree', page: 2, alwaysShow: true },
   { id: 'none_left', name: '0 left', page: 2, alwaysShow: true },
-  { id: 'one_left', name: '1 left', page: 2, alwaysShow: true },
-  { id: 'two_left', name: '2 left', page: 2, alwaysShow: true },
-  { id: 'three_left', name: '3 left', page: 2, alwaysShow: true },
   { id: 'following', name: 'Following', page: 2, alwaysShow: true },
-  { id: 'friend_planting', name: 'Planting friend', page: 2, alwaysShow: true },
-  { id: 'i_got_last', name: 'I got last', page: 2, alwaysShow: true },
   { id: 'i_killed_enemy', name: 'I killed enemy', page: 2, alwaysShow: true },
-  { id: 'i_killed_sniper', name: 'I killed sniper', page: 2, alwaysShow: true },
   { id: 'planting_defusing', name: 'Planting / Defusing', page: 2, alwaysShow: true },
   { id: 'in_position', name: 'In position', page: 2, alwaysShow: true },
-  { id: 'location_mid', name: 'Location Mid', page: 2, alwaysShow: true },
+  { id: 'i_got_last', name: 'I got last', page: 2, alwaysShow: true },
   { id: 'on_my_way', name: 'On my way', page: 2, alwaysShow: true },
-  { id: 'pinned', name: 'Pinned', page: 2, alwaysShow: true },
   { id: 'reporting_in', name: 'Reporting in', page: 2, alwaysShow: true },
-  { id: 'request_backup', name: 'Request Backup', page: 2, alwaysShow: true },
-  { id: 'request_fallback', name: 'Request Fallback', page: 2, alwaysShow: true },
-  { id: 'request_cover_me', name: 'Cover me', page: 2, alwaysShow: true },
   { id: 'request_follow_me', name: 'Follow me', page: 2, alwaysShow: true },
   { id: 'request_help', name: 'Request Help', page: 2, alwaysShow: true },
   { id: 'request_hold_position', name: 'Hold this position', page: 2, alwaysShow: true },
-  { id: 'request_weapon', name: 'Give me weapon', page: 2, alwaysShow: true },
   { id: 'losing', name: 'Losing', page: 2, alwaysShow: true },
   { id: 'see_dead_enemy', name: 'I see dead enemy', page: 2, alwaysShow: true },
   { id: 'enemy_spotted', name: 'Enemy spotted', page: 2, alwaysShow: true },
-  { id: 'many_enemies_spotted', name: 'Many enemies spotted', page: 2, alwaysShow: true },
-  { id: 'sniper', name: 'Sniper', page: 2, alwaysShow: true },
-  { id: 'see_bomb', name: 'I see bomb', page: 2, alwaysShow: true },
-  { id: 'taking_fire', name: 'Taking fire', page: 2, alwaysShow: true },
   { id: 'request_leader', name: 'Request Lead', page: 2, alwaysShow: true },
-  { id: 'regroup', name: 'Regroup', page: 2, alwaysShow: true },
-  { id: 'scared', name: 'Scared', page: 2, alwaysShow: true },
 ]
 
-const categoryConfigs = [...pageOneCategories, ...pageTwoCategories]
+const pageThreeCategories: VoiceCategoryConfig[] = [
+  { id: 'blinded', name: 'Blinded', page: 3, alwaysShow: true },
+  { id: 'bomb_planted', name: 'Bomb planted', page: 3, alwaysShow: true },
+  { id: 'countdown', name: 'Countdown', page: 3, alwaysShow: true },
+  { id: 'death', name: 'Death', page: 3, alwaysShow: true },
+  { id: 'one_left', name: '1 left', page: 3, alwaysShow: true },
+  { id: 'two_left', name: '2 left', page: 3, alwaysShow: true },
+  { id: 'three_left', name: '3 left', page: 3, alwaysShow: true },
+  { id: 'friend_planting', name: 'Planting friend', page: 3, alwaysShow: true },
+  { id: 'i_killed_sniper', name: 'I killed sniper', page: 3, alwaysShow: true },
+  { id: 'location_mid', name: 'Location Mid', page: 3, alwaysShow: true },
+  { id: 'pinned', name: 'Pinned', page: 3, alwaysShow: true },
+  { id: 'request_backup', name: 'Request Backup', page: 3, alwaysShow: true },
+  { id: 'request_fallback', name: 'Request Fallback', page: 3, alwaysShow: true },
+  { id: 'request_cover_me', name: 'Cover me', page: 3, alwaysShow: true },
+  { id: 'request_weapon', name: 'Give me weapon', page: 3, alwaysShow: true },
+  { id: 'many_enemies_spotted', name: 'Many enemies spotted', page: 3, alwaysShow: true },
+  { id: 'sniper', name: 'Sniper', page: 3, alwaysShow: true },
+  { id: 'see_bomb', name: 'I see bomb', page: 3, alwaysShow: true },
+  { id: 'taking_fire', name: 'Taking fire', page: 3, alwaysShow: true },
+  { id: 'regroup', name: 'Regroup', page: 3, alwaysShow: true },
+  { id: 'scared', name: 'Scared', page: 3, alwaysShow: true },
+]
+
+const categoryConfigs = [...pageOneCategories, ...pageTwoCategories, ...pageThreeCategories]
 const categoryConfigMap = Object.fromEntries(
   categoryConfigs.map((config) => [config.id, config]),
 ) as Record<string, VoiceCategoryConfig>
@@ -303,7 +310,7 @@ const mergeAudioItems = (existing: AudioItem[], incoming: AudioItem[]): AudioIte
   return merged
 }
 
-const createMissingGroup = (config: VoiceCategoryConfig): AudioContent => ({
+const createMissingGroup = (config: VoiceCategoryConfig): LegacyAudioContent => ({
   id: config.id,
   canonicalId: config.id,
   name: config.name,
@@ -312,8 +319,23 @@ const createMissingGroup = (config: VoiceCategoryConfig): AudioContent => ({
   audioItems: [],
 })
 
-export const buildVoicePages = (voiceLines: AudioContent[]): VoicePage[] => {
-  const groupedByCategory = new Map<string, AudioContent>()
+export const toAudioGroupMeta = (group: LegacyAudioContent): AudioGroupMeta => ({
+  id: group.id,
+  canonicalId: group.canonicalId,
+  name: group.name,
+  page: group.page,
+  isMissing: group.isMissing,
+  itemCount: group.audioItems.length,
+})
+
+const createPageGroups = (
+  categories: VoiceCategoryConfig[],
+  groupedByCategory: Map<string, LegacyAudioContent>,
+): LegacyAudioContent[] =>
+  categories.map((config) => groupedByCategory.get(config.id) ?? createMissingGroup(config))
+
+export const buildVoicePages = (voiceLines: LegacyAudioContent[]): VoicePage[] => {
+  const groupedByCategory = new Map<string, LegacyAudioContent>()
 
   for (const group of voiceLines) {
     const categoryId = resolveCategoryId(group.id)
@@ -321,6 +343,7 @@ export const buildVoicePages = (voiceLines: AudioContent[]): VoicePage[] => {
 
     const config = categoryConfigMap[categoryId]
     if (!config) continue
+
     const existing = groupedByCategory.get(categoryId)
 
     if (existing) {
@@ -337,31 +360,32 @@ export const buildVoicePages = (voiceLines: AudioContent[]): VoicePage[] => {
     })
   }
 
-  const createAudioGroups = (categories: VoiceCategoryConfig[]):AudioContent[] => {
-    const audioGroups = categories.map((config)=> {
-      if (config.alwaysShow){
-        return groupedByCategory.get(config.id) ? groupedByCategory.get(config.id) : createMissingGroup(config)
-      }}).filter((config)=>(config !== undefined))
-    return audioGroups
-    }
-
-
-
-  const iconicGroups = createAudioGroups(pageOneCategories)
-  const additionalGroups = createAudioGroups(pageTwoCategories)
-
   return [
     {
       id: 1,
       title: 'Страница 1',
-      description: 'Наиболее знаковые голосовые линии.',
-      groups: iconicGroups,
+      description: 'Наиболее известные голоcовые линии.',
+      groups: createPageGroups(pageOneCategories, groupedByCategory),
     },
     {
       id: 2,
       title: 'Страница 2',
-      description: 'Менее знаковые, но стоящие внимания группы. Отсутствующие помечены.',
-      groups: additionalGroups.filter((group): group is AudioContent => Boolean(group)),
+      description: 'Менее известные, но важные события группы.',
+      groups: createPageGroups(pageTwoCategories, groupedByCategory),
+    },
+    {
+      id: 3,
+      title: 'Страница 3',
+      description: 'Ситуативные линии',
+      groups: createPageGroups(pageThreeCategories, groupedByCategory),
     },
   ]
 }
+
+export const buildVoicePageMetas = (voiceLines: LegacyAudioContent[]): VoicePageMeta[] =>
+  buildVoicePages(voiceLines).map((page) => ({
+    id: page.id,
+    title: page.title,
+    description: page.description,
+    groups: page.groups.map(toAudioGroupMeta),
+  }))

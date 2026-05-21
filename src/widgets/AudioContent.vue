@@ -1,41 +1,76 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { AudioContent } from '@/core/models/audioContent'
+import type { AudioContent, AudioItem } from '@/core/models/audioContent'
 
-defineProps<{
+const props = defineProps<{
   audioContent: AudioContent[]
 }>()
 
 const openSections = ref<Record<string, boolean>>({})
+const loadingSections = ref<Record<string, boolean>>({})
+const resolvedItems = ref<Record<string, AudioItem[]>>({})
 
-const toggleSection = (sectionId: string) => {
-  openSections.value[sectionId] = !openSections.value[sectionId]
-}
+const getSectionId = (audioGroup: AudioContent): string => audioGroup.meta.id
+
+const isMissingGroup = (audioGroup: AudioContent): boolean =>
+  audioGroup.meta.isMissing === true || (audioGroup.meta.itemCount ?? audioGroup.audioItems.length) === 0
 
 const isSectionOpen = (sectionId: string): boolean => openSections.value[sectionId] ?? false
-const isMissingGroup = (audioGroup: AudioContent): boolean =>
-  audioGroup.isMissing === true || audioGroup.audioItems.length === 0
+const isSectionLoading = (sectionId: string): boolean => loadingSections.value[sectionId] ?? false
+const getSectionItems = (sectionId: string): AudioItem[] => resolvedItems.value[sectionId] ?? []
+
+const resolveSectionItems = async (audioGroup: AudioContent): Promise<void> => {
+  const sectionId = getSectionId(audioGroup)
+  if (resolvedItems.value[sectionId] || isMissingGroup(audioGroup)) return
+
+  loadingSections.value[sectionId] = true
+
+  try {
+    resolvedItems.value[sectionId] = await Promise.all(audioGroup.audioItems.map((loadItem) => loadItem()))
+  } finally {
+    loadingSections.value[sectionId] = false
+  }
+}
+
+const toggleSection = async (audioGroup: AudioContent) => {
+  if (isMissingGroup(audioGroup)) return
+
+  const sectionId = getSectionId(audioGroup)
+  const nextState = !isSectionOpen(sectionId)
+  openSections.value[sectionId] = nextState
+
+  if (nextState) {
+    await resolveSectionItems(audioGroup)
+  }
+}
 </script>
 
 <template>
   <div class="audioContent">
-    <div v-for="audioGroup in audioContent" :key="audioGroup.id" class="audioItems">
+    <div v-for="audioGroup in props.audioContent" :key="audioGroup.meta.id" class="audioItems">
       <button
         class="audioSectionHeader"
         :class="isMissingGroup(audioGroup) ? 'missing' : ''"
-        :aria-expanded="isSectionOpen(audioGroup.id)"
+        :aria-expanded="isSectionOpen(audioGroup.meta.id)"
         :disabled="isMissingGroup(audioGroup)"
-        @click="toggleSection(audioGroup.id)"
+        @click="toggleSection(audioGroup)"
       >
-        <h3>{{ audioGroup.name }}</h3>
+        <h3>{{ audioGroup.meta.name }}</h3>
         <span v-if="isMissingGroup(audioGroup)" class="missingBadge">Нет</span>
-        <span v-else class="toggleIcon" :class="isSectionOpen(audioGroup.id) ? 'open' : ''">▼</span>
+        <span v-else class="toggleMeta">
+          <span class="itemCount">{{ audioGroup.meta.itemCount ?? audioGroup.audioItems.length }}</span>
+          <span class="toggleIcon" :class="isSectionOpen(audioGroup.meta.id) ? 'open' : ''">▼</span>
+        </span>
       </button>
 
-      <div v-if="audioGroup.isMissing" class="audioSectionMissing">Нет у этой подфракции</div>
+      <div v-if="audioGroup.meta.isMissing" class="audioSectionMissing">Нет {{ audioGroup.meta.name }}</div>
 
-      <div v-else-if="isSectionOpen(audioGroup.id)" class="audioSectionContent open">
-        <div v-for="audio in audioGroup.audioItems" :key="audio.id" class="audioItem">
+      <div v-else-if="isSectionOpen(audioGroup.meta.id)" class="audioSectionContent open">
+        <div v-if="isSectionLoading(audioGroup.meta.id)" class="audioSectionLoading">
+          Загружаю голосовые линии...
+        </div>
+
+        <div v-else v-for="audio in getSectionItems(audioGroup.meta.id)" :key="audio.id" class="audioItem">
           <p class="audioTitle">{{ audio.title }}</p>
           <audio :src="audio.url" class="audioPlayer" controls preload="none"></audio>
         </div>
@@ -46,8 +81,8 @@ const isMissingGroup = (audioGroup: AudioContent): boolean =>
 
 <style scoped>
 .audioContent {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-top: 1rem;
   width: 100%;
@@ -97,6 +132,17 @@ const isMissingGroup = (audioGroup: AudioContent): boolean =>
   color: #333;
 }
 
+.toggleMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.itemCount {
+  font-size: 0.85rem;
+  color: #666;
+}
+
 .missingBadge {
   display: inline-flex;
   align-items: center;
@@ -135,7 +181,8 @@ const isMissingGroup = (audioGroup: AudioContent): boolean =>
   padding: 1rem 1.5rem;
 }
 
-.audioSectionMissing {
+.audioSectionMissing,
+.audioSectionLoading {
   padding: 0.9rem 1.5rem 1.1rem;
   color: #666;
   font-size: 0.95rem;
