@@ -7,5 +7,5 @@ import { swat_male } from './swat_male/swat_male'
 export const fbi_swat: Faction = {
   id: 'fbi_swat',
   name: 'FBI SWAT',
-  subfractions: [swat_fem, swat_male, master_fbi, master_swat],
+  subfractions: [swat_male, swat_fem, master_fbi, master_swat],
 }

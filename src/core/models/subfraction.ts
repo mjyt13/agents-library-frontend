@@ -1,5 +1,5 @@
 import type { Agent } from './agent'
-import type { AudioContent, LegacyAudioContent, VoicePageId, VoicePageMeta } from './audioContent'
+import type { AudioContent, VoicePageId, VoicePageMeta } from './audioContent'
 
 export const SubfractionType = {
   MALE: 'Male',
@@ -25,11 +25,18 @@ export const SubfractionTypeRus = {
 export type SubfractionType = (typeof SubfractionType)[keyof typeof SubfractionType]
 export type SubfractionTypeRus = (typeof SubfractionTypeRus)[keyof typeof SubfractionTypeRus]
 
-export interface Subfraction {
+export interface SubfractionMeta {
   id: string
   name: SubfractionType
   agents: Agent[]
-  voiceLines?: LegacyAudioContent[]
-  voicePages?: VoicePageMeta[]
-  loadVoicePage?: (pageId: VoicePageId) => Promise<AudioContent[]>
+}
+
+export interface SubfractionAudioSource {
+  voicePages: VoicePageMeta[]
+  loadVoicePage: (pageId: VoicePageId) => Promise<AudioContent[]>
+}
+
+export interface Subfraction {
+  meta: SubfractionMeta
+  loadAudioSource: () => Promise<SubfractionAudioSource>
 }

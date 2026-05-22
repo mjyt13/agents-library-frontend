@@ -26,12 +26,3 @@ export interface AudioContent {
   meta: AudioGroupMeta
   audioItems: Array<() => Promise<AudioItem>>
 }
-
-export interface LegacyAudioContent {
-  id: string
-  canonicalId?: string
-  name: string
-  page?: VoicePageId
-  isMissing?: boolean
-  audioItems: AudioItem[]
-}

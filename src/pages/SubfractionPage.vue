@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from 'vue'
-import type { AudioContent, AudioItem, LegacyAudioContent, VoicePageId, VoicePageMeta } from '@/core/models/audioContent'
-import type { Subfraction } from '@/core/models/subfraction'
+import type { AudioContent, VoicePageId } from '@/core/models/audioContent'
+import type { Subfraction, SubfractionAudioSource } from '@/core/models/subfraction'
 import * as AudioContentModule from '@/widgets/AudioContent.vue'
-import { buildVoicePageMetas, buildVoicePages, toAudioGroupMeta } from '@/utils/buildVoicePages'
 
 const AudioContentWidget = AudioContentModule.default
 
@@ -17,11 +16,6 @@ const imageAssets = import.meta.glob('/src/interface/data/**/*.{png,jpg,jpeg,web
   query: '?url',
 })
 
-const audioAssets = import.meta.glob('/src/interface/data/**/*.{wav,ogg,oga}', {
-  import: 'default',
-  query: '?url',
-})
-
 const getImageAssetUrl = async (path: string): Promise<string> => {
   const fullPath = `/src/interface/data/${path}`
   const mod = imageAssets[fullPath]
@@ -29,109 +23,78 @@ const getImageAssetUrl = async (path: string): Promise<string> => {
   return `${import.meta.env.BASE_URL}src/interface/data/${path}`
 }
 
-const getAudioAssetUrl = async (path: string): Promise<string> => {
-  const fullPath = `/src/interface/data/${path}`
-  const mod = audioAssets[fullPath]
-  if (typeof mod === 'function') return (await mod()) as string
-  return `${import.meta.env.BASE_URL}src/interface/data/${path}`
-}
-
 const currentIndex = ref(0)
 const currentVoicePageId = ref<VoicePageId>(1)
 const previewUrl = ref('')
+const audioSource = ref<SubfractionAudioSource | null>(null)
 const currentAudioGroups = ref<AudioContent[]>([])
+const isAudioSourceLoading = ref(false)
 const isVoicePageLoading = ref(false)
 
+const audioSourceCache = new Map<string, SubfractionAudioSource>()
 const pageCache = new Map<string, AudioContent[]>()
 
-const agent = computed(() => props.subfraction.agents[currentIndex.value])
-const hasMultiple = computed(() => props.subfraction.agents.length > 1)
-const voicePages = computed<VoicePageMeta[]>(() => {
-  if (props.subfraction.voicePages?.length) return props.subfraction.voicePages
-  return buildVoicePageMetas(props.subfraction.voiceLines ?? [])
-})
+const subfractionId = computed(() => props.subfraction.meta.id)
+const agents = computed(() => props.subfraction.meta.agents)
+const agent = computed(() => agents.value[currentIndex.value])
+const hasMultiple = computed(() => agents.value.length > 1)
+const voicePages = computed(() => audioSource.value?.voicePages ?? [])
 
 const currentVoicePage = computed(
   () => voicePages.value.find((page) => page.id === currentVoicePageId.value) ?? voicePages.value[0] ?? null,
 )
 
-const createLegacyAudioContent = (
-  group: LegacyAudioContent,
-): AudioContent => ({
-  meta: {
-    ...toAudioGroupMeta(group),
-    itemCount: group.audioItems.length,
-  },
-  audioItems: group.audioItems.map(
-    (item): (() => Promise<AudioItem>) =>
-      async () => ({
-        ...item,
-        url: item.url.startsWith('http') ? item.url : await getAudioAssetUrl(item.url),
-      }),
-  ),
-})
-
-const normalizeAudioContent = (groups: AudioContent[]): AudioContent[] =>
-  groups.map((group) => ({
-    meta: group.meta,
-    audioItems: group.audioItems.map(
-      (loadItem): (() => Promise<AudioItem>) =>
-        async () => {
-          const item = await loadItem()
-          if (item.url.startsWith('http') || item.url.startsWith('blob:') || item.url.startsWith('data:')) {
-            return item
-          }
-
-          return {
-            ...item,
-            url: await getAudioAssetUrl(item.url),
-          }
-        },
-    ),
-  }))
-
-const loadLegacyVoicePage = async (pageId: VoicePageId): Promise<AudioContent[]> => {
-  const page = buildVoicePages(props.subfraction.voiceLines ?? []).find((entry) => entry.id === pageId)
-  return (page?.groups ?? []).map(createLegacyAudioContent)
-}
-
-const loadVoicePage = async (pageId: VoicePageId): Promise<AudioContent[]> => {
-  if (props.subfraction.loadVoicePage) {
-    const groups = await props.subfraction.loadVoicePage(pageId)
-    return normalizeAudioContent(groups)
-  }
-  return loadLegacyVoicePage(pageId)
-}
-
 watch(
-  () => props.subfraction.id,
-  () => {
-    currentIndex.value = 0
-    currentVoicePageId.value = voicePages.value[0]?.id ?? 1
-    currentAudioGroups.value = []
-  },
-)
-
-watch(
-  [() => props.subfraction.id, currentVoicePageId],
-  async ([subfractionId, pageId], _previous, onCleanup) => {
+  subfractionId,
+  async (id, _previousId, onCleanup) => {
     let cancelled = false
     onCleanup(() => {
       cancelled = true
     })
 
-    // currentVoicePageId.value = pageId || voicePages.value[0]?.id || 1
-    const cacheKey = `${subfractionId}:${pageId}`
+    currentIndex.value = 0
+    audioSource.value = null
+    currentAudioGroups.value = []
+    isVoicePageLoading.value = false
+    isAudioSourceLoading.value = true
+
+    try {
+      const cached = audioSourceCache.get(id)
+      const loadedAudioSource = cached ?? (await props.subfraction.loadAudioSource())
+      if (cancelled) return
+
+      audioSourceCache.set(id, loadedAudioSource)
+      audioSource.value = loadedAudioSource
+      currentVoicePageId.value = loadedAudioSource.voicePages[0]?.id ?? 1
+    } finally {
+      if (!cancelled) isAudioSourceLoading.value = false
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  [subfractionId, currentVoicePageId, audioSource],
+  async ([id, pageId, source], _previous, onCleanup) => {
+    if (!source) return
+
+    let cancelled = false
+    onCleanup(() => {
+      cancelled = true
+    })
+
+    const cacheKey = `${id}:${pageId}`
     const cached = pageCache.get(cacheKey)
     if (cached) {
       currentAudioGroups.value = cached
+      isVoicePageLoading.value = false
       return
     }
 
     isVoicePageLoading.value = true
 
     try {
-      const loadedGroups = await loadVoicePage(pageId)
+      const loadedGroups = await source.loadVoicePage(pageId)
       if (cancelled) return
       pageCache.set(cacheKey, loadedGroups)
       currentAudioGroups.value = loadedGroups
@@ -155,12 +118,11 @@ watchEffect(async (onCleanup) => {
 })
 
 const prev = () => {
-  currentIndex.value =
-    (currentIndex.value - 1 + props.subfraction.agents.length) % props.subfraction.agents.length
+  currentIndex.value = (currentIndex.value - 1 + agents.value.length) % agents.value.length
 }
 
 const next = () => {
-  currentIndex.value = (currentIndex.value + 1) % props.subfraction.agents.length
+  currentIndex.value = (currentIndex.value + 1) % agents.value.length
 }
 </script>
 
@@ -174,7 +136,7 @@ const next = () => {
       </div>
       <div class="carousel" v-if="hasMultiple">
         <button @click="prev">←</button>
-        <span>{{ currentIndex + 1 }} / {{ subfraction.agents.length }}</span>
+        <span>{{ currentIndex + 1 }} / {{ agents.length }}</span>
         <button @click="next">→</button>
       </div>
     </div>
@@ -182,7 +144,9 @@ const next = () => {
     <p class="agentDescription">{{ agent?.description || '' }}</p>
     <p class="agentComment">{{ agent?.comment || '' }}</p>
 
-    <div v-if="voicePages.length" class="voicePages">
+    <p v-if="isAudioSourceLoading" class="voicePageLoading">Пожалуйста, подождите...</p>
+
+    <div v-else-if="voicePages.length" class="voicePages">
       <div class="voicePageSwitcher">
         <button
           v-for="page in voicePages"

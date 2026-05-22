@@ -1,16 +1,13 @@
 import type {
-  AudioGroupMeta,
-  AudioItem,
-  LegacyAudioContent,
+  AudioContent,
   VoicePageId,
-  VoicePageMeta,
 } from '@/core/models/audioContent'
 
 export interface VoicePage {
   id: VoicePageId
   title: string
   description: string
-  groups: LegacyAudioContent[]
+  groups: AudioContent[]
 }
 
 interface VoiceCategoryConfig {
@@ -297,48 +294,29 @@ const resolveCategoryId = (rawGroupId: string): string | null => {
   return null
 }
 
-const mergeAudioItems = (existing: AudioItem[], incoming: AudioItem[]): AudioItem[] => {
-  const merged = [...existing]
-  const seen = new Set(existing.map((item) => item.url))
-
-  for (const item of incoming) {
-    if (seen.has(item.url)) continue
-    seen.add(item.url)
-    merged.push(item)
-  }
-
-  return merged
-}
-
-const createMissingGroup = (config: VoiceCategoryConfig): LegacyAudioContent => ({
-  id: config.id,
-  canonicalId: config.id,
-  name: config.name,
-  page: config.page,
-  isMissing: true,
+const createMissingGroup = (config: VoiceCategoryConfig): AudioContent => ({
+  meta: {
+    id: config.id,
+    canonicalId: config.id,
+    name: config.name,
+    page: config.page,
+    isMissing: true,
+    itemCount: 0,
+  },
   audioItems: [],
-})
-
-export const toAudioGroupMeta = (group: LegacyAudioContent): AudioGroupMeta => ({
-  id: group.id,
-  canonicalId: group.canonicalId,
-  name: group.name,
-  page: group.page,
-  isMissing: group.isMissing,
-  itemCount: group.audioItems.length,
 })
 
 const createPageGroups = (
   categories: VoiceCategoryConfig[],
-  groupedByCategory: Map<string, LegacyAudioContent>,
-): LegacyAudioContent[] =>
+  groupedByCategory: Map<string, AudioContent>,
+): AudioContent[] =>
   categories.map((config) => groupedByCategory.get(config.id) ?? createMissingGroup(config))
 
-export const buildVoicePages = (voiceLines: LegacyAudioContent[]): VoicePage[] => {
-  const groupedByCategory = new Map<string, LegacyAudioContent>()
+export const buildVoicePages = (audioGroups: AudioContent[]): VoicePage[] => {
+  const groupedByCategory = new Map<string, AudioContent>()
 
-  for (const group of voiceLines) {
-    const categoryId = resolveCategoryId(group.id)
+  for (const group of audioGroups) {
+    const categoryId = resolveCategoryId(group.meta.id)
     if (!categoryId) continue
 
     const config = categoryConfigMap[categoryId]
@@ -347,15 +325,19 @@ export const buildVoicePages = (voiceLines: LegacyAudioContent[]): VoicePage[] =
     const existing = groupedByCategory.get(categoryId)
 
     if (existing) {
-      existing.audioItems = mergeAudioItems(existing.audioItems, group.audioItems)
+      existing.audioItems.push(...group.audioItems)
+      existing.meta.itemCount = (existing.meta.itemCount ?? 0) + (group.meta.itemCount ?? group.audioItems.length)
       continue
     }
 
     groupedByCategory.set(categoryId, {
-      id: config.id,
-      canonicalId: config.id,
-      name: config.name,
-      page: config.page,
+      meta: {
+        id: config.id,
+        canonicalId: config.id,
+        name: config.name,
+        page: config.page,
+        itemCount: group.meta.itemCount ?? group.audioItems.length,
+      },
       audioItems: [...group.audioItems],
     })
   }
@@ -381,11 +363,3 @@ export const buildVoicePages = (voiceLines: LegacyAudioContent[]): VoicePage[] =
     },
   ]
 }
-
-export const buildVoicePageMetas = (voiceLines: LegacyAudioContent[]): VoicePageMeta[] =>
-  buildVoicePages(voiceLines).map((page) => ({
-    id: page.id,
-    title: page.title,
-    description: page.description,
-    groups: page.groups.map(toAudioGroupMeta),
-  }))

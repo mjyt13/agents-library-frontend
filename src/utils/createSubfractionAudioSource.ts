@@ -1,43 +1,56 @@
-import type { AudioContent, AudioGroupMeta, AudioItem, LegacyAudioContent, VoicePageId, VoicePageMeta } from '@/core/models/audioContent'
-import { buildVoicePageMetas, buildVoicePages, toAudioGroupMeta } from '@/utils/buildVoicePages'
+import type { AudioContent, AudioGroupMeta } from '@/core/models/audioContent'
+import type { SubfractionAudioSource } from '@/core/models/subfraction'
+import { buildVoicePages } from '@/utils/buildVoicePages'
 import { createAudioContentFromFiles } from '@/utils/createAudioContentFromFiles'
 
-interface SubfractionAudioSource {
-  voicePages: VoicePageMeta[]
-  loadVoicePage: (pageId: VoicePageId) => Promise<AudioContent[]>
-}
-
-const createLazyAudioGroup = (group: LegacyAudioContent): AudioContent => ({
-  meta: {
-    ...toAudioGroupMeta(group),
-    itemCount: group.audioItems.length,
-  },
-  audioItems: group.audioItems.map(
-    (item): (() => Promise<AudioItem>) =>
-      async () => item,
-  ),
-})
+type AudioAssetModules = Record<string, () => Promise<unknown>>
 
 export const createMissingAudioGroup = (meta: AudioGroupMeta): AudioContent => ({
   meta,
   audioItems: [],
 })
 
-export const createAudioSourceFromLegacyGroups = (
-  groups: LegacyAudioContent[],
-): SubfractionAudioSource => {
-  const builtPages = buildVoicePages(groups)
-
-  return {
-    voicePages: buildVoicePageMetas(groups),
-    loadVoicePage: async (pageId) =>
-      (builtPages.find((page) => page.id === pageId)?.groups ?? []).map(createLazyAudioGroup),
-  }
-}
-
 export const createAudioSourceFromFiles = (
   files: string[],
   basePath: string,
   categoryNames: Record<string, string> = {},
-): SubfractionAudioSource =>
-  createAudioSourceFromLegacyGroups(createAudioContentFromFiles(files, basePath, categoryNames))
+): SubfractionAudioSource => {
+  const pages = buildVoicePages(createAudioContentFromFiles(files, basePath, categoryNames))
+
+  return {
+    voicePages: pages.map((page) => ({
+      id: page.id,
+      title: page.title,
+      description: page.description,
+      groups: page.groups.map((group) => group.meta),
+    })),
+    loadVoicePage: async (pageId) => pages.find((page) => page.id === pageId)?.groups ?? [],
+  }
+}
+
+export const createAudioSourceFromModules = (
+  audioModules: AudioAssetModules,
+  basePath: string,
+  categoryNames: Record<string, string> = {},
+): SubfractionAudioSource => {
+  const audioFiles = Object.keys(audioModules).map((path) => path.split('/').pop() ?? '')
+  const resolveAudioUrl = async (fileName: string, assetPath: string): Promise<string> => {
+    const modulePath = `/src/interface/data/${basePath}/${fileName}`
+    const loadModule = audioModules[modulePath]
+    if (typeof loadModule === 'function') return String(await loadModule())
+
+    return `${import.meta.env.BASE_URL}src/interface/data/${assetPath}`
+  }
+
+  const pages = buildVoicePages(createAudioContentFromFiles(audioFiles, basePath, categoryNames, resolveAudioUrl))
+
+  return {
+    voicePages: pages.map((page) => ({
+      id: page.id,
+      title: page.title,
+      description: page.description,
+      groups: page.groups.map((group) => group.meta),
+    })),
+    loadVoicePage: async (pageId) => pages.find((page) => page.id === pageId)?.groups ?? [],
+  }
+}

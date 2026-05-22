@@ -56,16 +56,16 @@ const toggleSection = async (audioGroup: AudioContent) => {
         @click="toggleSection(audioGroup)"
       >
         <h3>{{ audioGroup.meta.name }}</h3>
-        <span v-if="isMissingGroup(audioGroup)" class="missingBadge">Нет</span>
+        <span v-if="audioGroup.meta.isMissing" class="missingBadge">Нет</span>
         <span v-else class="toggleMeta">
           <span class="itemCount">{{ audioGroup.meta.itemCount ?? audioGroup.audioItems.length }}</span>
           <span class="toggleIcon" :class="isSectionOpen(audioGroup.meta.id) ? 'open' : ''">▼</span>
         </span>
       </button>
 
-      <div v-if="audioGroup.meta.isMissing" class="audioSectionMissing">Нет {{ audioGroup.meta.name }}</div>
+      <!-- <div v-if="audioGroup.meta.isMissing" class="audioSectionMissing">Нет {{ audioGroup.meta.name }}</div> -->
 
-      <div v-else-if="isSectionOpen(audioGroup.meta.id)" class="audioSectionContent open">
+      <div v-if="isSectionOpen(audioGroup.meta.id)" class="audioSectionContent open">
         <div v-if="isSectionLoading(audioGroup.meta.id)" class="audioSectionLoading">
           Загружаю голосовые линии...
         </div>
@@ -81,17 +81,19 @@ const toggleSection = async (audioGroup: AudioContent) => {
 
 <style scoped>
 .audioContent {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  columns: 2 400px;
+  column-gap: 1rem;
   margin-top: 1rem;
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
 }
 
 .audioItems {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
+  width: 100%;
+  margin: 0 0 1rem;
+  break-inside: avoid;
   overflow: hidden;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -223,5 +225,11 @@ const toggleSection = async (audioGroup: AudioContent) => {
 .audioPlayer:focus {
   outline: 2px solid #4a90e2;
   outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .audioContent {
+    columns: 1;
+  }
 }
 </style>

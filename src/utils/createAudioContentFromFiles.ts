@@ -1,4 +1,6 @@
-import type { AudioItem, LegacyAudioContent } from '@/core/models/audioContent'
+import type { AudioContent, AudioItem } from '@/core/models/audioContent'
+
+type AudioUrlResolver = (fileName: string, assetPath: string) => string | Promise<string>
 
 const splitCamelOrSnake = (value: string): string[] =>
   value
@@ -36,7 +38,8 @@ export const createAudioContentFromFiles = (
   files: string[],
   basePath: string,
   categoryNames: Record<string, string> = {},
-): LegacyAudioContent[] => {
+  resolveAudioUrl: AudioUrlResolver = (_fileName, assetPath) => assetPath,
+): AudioContent[] => {
   const grouped = new Map<string, string[]>()
 
   for (const fileName of files) {
@@ -63,9 +66,18 @@ export const createAudioContentFromFiles = (
         }))
 
       return {
-        id: categoryId,
-        name: categoryName,
-        audioItems,
+        meta: {
+          id: categoryId,
+          name: categoryName,
+          itemCount: audioItems.length,
+        },
+        audioItems: audioItems.map(
+          (item): (() => Promise<AudioItem>) =>
+            async () => ({
+              ...item,
+              url: await resolveAudioUrl(item.url.slice(basePath.length + 1), item.url),
+            }),
+        ),
       }
     })
 }
