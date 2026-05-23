@@ -1,5 +1,6 @@
 import type { Agent } from './agent'
 import type { AudioContent, VoicePageId, VoicePageMeta } from './audioContent'
+import type { ImagePreviewSource } from './imagePreview'
 
 export const SubfractionType = {
   MALE: 'Male',
@@ -39,4 +40,5 @@ export interface SubfractionAudioSource {
 export interface Subfraction {
   meta: SubfractionMeta
   loadAudioSource: () => Promise<SubfractionAudioSource>
+  loadPreviewSource?: () => Promise<ImagePreviewSource>
 }

@@ -164,7 +164,11 @@ const next = () => {
       <p v-if="currentVoicePage" class="voicePageDescription">{{ currentVoicePage.description }}</p>
       <p v-if="isVoicePageLoading" class="voicePageLoading">Подождите...</p>
 
-      <AudioContentWidget v-else-if="currentAudioGroups.length" :audio-content="currentAudioGroups" />
+      <AudioContentWidget
+        v-else-if="currentAudioGroups.length"
+        :key="`${subfractionId}:${currentVoicePageId}`"
+        :audio-content="currentAudioGroups"
+      />
     </div>
   </div>
 </template>
@@ -185,6 +189,7 @@ const next = () => {
   gap: 1.5rem;
   width: 100%;
   max-width: 900px;
+  box-shadow: 0px 10px 16px 2px rgba(0, 0, 0, 0.2);
 }
 
 .agentPreview {

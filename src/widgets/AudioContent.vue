@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { AudioContent, AudioItem } from '@/core/models/audioContent'
 
 const props = defineProps<{
@@ -18,6 +18,12 @@ const isMissingGroup = (audioGroup: AudioContent): boolean =>
 const isSectionOpen = (sectionId: string): boolean => openSections.value[sectionId] ?? false
 const isSectionLoading = (sectionId: string): boolean => loadingSections.value[sectionId] ?? false
 const getSectionItems = (sectionId: string): AudioItem[] => resolvedItems.value[sectionId] ?? []
+
+const resetSections = () => {
+  openSections.value = {}
+  loadingSections.value = {}
+  resolvedItems.value = {}
+}
 
 const resolveSectionItems = async (audioGroup: AudioContent): Promise<void> => {
   const sectionId = getSectionId(audioGroup)
@@ -43,6 +49,8 @@ const toggleSection = async (audioGroup: AudioContent) => {
     await resolveSectionItems(audioGroup)
   }
 }
+
+watch(() => props.audioContent, resetSections)
 </script>
 
 <template>
@@ -81,11 +89,11 @@ const toggleSection = async (audioGroup: AudioContent) => {
 
 <style scoped>
 .audioContent {
-  columns: 2 400px;
+  columns: 3;
   column-gap: 1rem;
   margin-top: 1rem;
   width: 100%;
-  max-width: 900px;
+  /* max-width: 900px; */
 }
 
 .audioItems {
@@ -96,7 +104,7 @@ const toggleSection = async (audioGroup: AudioContent) => {
   break-inside: avoid;
   overflow: hidden;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 4px;
   background-color: #f9f9f9;
   transition: all 0.3s ease;
 }

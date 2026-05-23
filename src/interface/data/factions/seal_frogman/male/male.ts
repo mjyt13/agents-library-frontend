@@ -4,4 +4,5 @@ import { meta } from './meta'
 export const seal_frogman_male: Subfraction = {
   meta,
   loadAudioSource: () => import('./audio').then((module) => module.audioSource),
+  loadPreviewSource: () => import('./previews').then((module) => module.previewSource),
 }

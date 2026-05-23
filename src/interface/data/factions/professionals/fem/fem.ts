@@ -4,4 +4,5 @@ import { meta } from './meta'
 export const professionals_fem: Subfraction = {
   meta,
   loadAudioSource: () => import('./audio').then((module) => module.audioSource),
+  loadPreviewSource: () => import('./previews').then((module) => module.previewSource),
 }

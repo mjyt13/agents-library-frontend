@@ -133,7 +133,7 @@ const aliasMap: Record<string, string> = {
   radio_enemyspottedpirates: 'sees_enemy',
   radio_followme: 'request_follow_me',
   radio_letsgo: 'request_move',
-  radio_locknload: 'request_move',
+  radio_locknload: 'round_start',
   radio_needbackup: 'request_backup',
   radio_takingfire: 'takingfire',
   radiobotreponsepositive: 'affirmation',

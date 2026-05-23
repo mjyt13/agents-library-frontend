@@ -1,10 +1,9 @@
 import type { Subfraction } from './subfraction'
-
-// Объект-константа: доступ через SubfractionType.FEMALE или SubfractionType['FEMALE']
-// Map здесь не подходит — у Map синтаксис map.get('FEMALE'), а не map['FEMALE']
+import type { ImagePreviewSource } from './imagePreview'
 
 export interface Faction {
   id: string
   name: string
+  previews?: ImagePreviewSource
   subfractions: Subfraction[]
 }
