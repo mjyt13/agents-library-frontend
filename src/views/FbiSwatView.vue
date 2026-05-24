@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FactionPage from '@/components/FactionPage.vue'
+import FactionPage from '@/pages/FactionPage.vue'
 import { fbi_swat } from '@/interface/data/factions/fbi_swat/fbi_swat'
 </script>
 

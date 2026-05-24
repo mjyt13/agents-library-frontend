@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FactionPage from '@/components/FactionPage.vue'
+import FactionPage from '@/pages/FactionPage.vue'
 import { separatist } from '@/interface/data/factions/separatist/separatist'
 </script>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FactionPage from '@/components/FactionPage.vue'
+import FactionPage from '@/pages/FactionPage.vue'
 import { idf } from '@/interface/data/factions/idf/idf'
 </script>
 

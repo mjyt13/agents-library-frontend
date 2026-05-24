@@ -458,8 +458,10 @@ watch(
   top: 0;
   z-index: 100;
   background: #fff;
-  display: flex;
-  flex-direction: column;
+  /* display: flex; */
+  /* flex-direction: column; */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   padding: 1rem;
   line-height: 1.5;
@@ -504,7 +506,7 @@ watch(
 .homeLink,
 .navDropdownButton {
   border: 1px solid #d2d2d2;
-  border-radius: 10px;
+  border-radius: 5px;
   color: inherit;
   background: #fff;
   text-decoration: none;
@@ -538,7 +540,7 @@ watch(
 
 .navDropdown {
   position: relative;
-  width: min(360px, calc(100vw - 2rem));
+  width: max(10rem,30rem);
 }
 
 .navDropdownButton {
@@ -547,7 +549,7 @@ watch(
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 96px;
+  height: max(6rem, 8rem);
   padding: 0.35rem;
   overflow: hidden;
   cursor: pointer;

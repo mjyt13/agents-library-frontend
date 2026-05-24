@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FactionPage from '@/components/FactionPage.vue'
+import FactionPage from '@/pages/FactionPage.vue'
 import { seal_frogman } from '@/interface/data/factions/seal_frogman/seal_frogman'
 </script>
 

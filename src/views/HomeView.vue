@@ -1,5 +1,17 @@
+<script setup lang="ts">
+import { RouterLink } from 'vue-router'
+const NAV_PREVIEW_FALLBACK_URL = '/mock.png'
+
+function getPreviewStyle(url: string): Record<string, string> {
+  return url ? { '--hero-preview': `url("${url}")` } : {}
+}
+
+</script>
+
 <template>
-  <main class="homeView">
+  <main
+  :style="getPreviewStyle(NAV_PREVIEW_FALLBACK_URL)"
+  class="homeView">
     <section class="hero">
       <p class="eyebrow">CS2 Agents Library</p>
       <h1>Слушай голосовые линии по фракциям и подфракциям.</h1>
@@ -96,16 +108,15 @@
   </main>
 </template>
 
-<script setup lang="ts">
-import { RouterLink } from 'vue-router'
-</script>
-
 <style scoped>
 .homeView {
   display: flex;
   flex-direction: column;
   gap: 2rem;
   padding: 2rem 1rem 3rem;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+    var(--hero-preview, none) center / cover no-repeat;
 }
 
 .hero {

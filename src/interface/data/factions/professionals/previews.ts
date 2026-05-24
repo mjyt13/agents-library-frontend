@@ -5,4 +5,6 @@ const previewModules = import.meta.glob('./previews/*.{png,jpg,jpeg,webp}', {
   query: '?url',
 })
 
-export const previews = createImagePreviewSourceFromModules(previewModules)
+const durationMs = { min: 1100, max: 2200 }
+
+export const previews = createImagePreviewSourceFromModules(previewModules, durationMs)

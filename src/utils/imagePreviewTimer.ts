@@ -1,8 +1,8 @@
 import type { ImagePreviewDuration } from '@/core/models/imagePreview'
 
 export const DEFAULT_IMAGE_PREVIEW_DURATION_MS: ImagePreviewDuration = {
-  min: 2200,
-  max: 2800,
+  min: 1400,
+  max: 3200,
 }
 
 export interface RandomPreviewCandidate<T> {

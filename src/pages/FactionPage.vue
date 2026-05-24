@@ -255,8 +255,7 @@ function setSubfractionPreviewUrl(subfractionId: string, url: string) {
     }
 
     const timeout = window.setTimeout(() => {
-      const { [subfractionId]: _removed, ...rest } = previousSubfractionPreviewUrls.value
-      previousSubfractionPreviewUrls.value = rest
+      clearPreviousSubfractionPreviewUrl(subfractionId)
     }, 650)
 
     subfractionPreviewAnimationTimeouts.push(timeout)
@@ -324,6 +323,12 @@ watch(
   updateSwitcherOverflow,
   { immediate: true },
 )
+
+function clearPreviousSubfractionPreviewUrl(subfractionId: string) {
+  const nextPreviousUrls = {...previousSubfractionPreviewUrls.value}
+  delete nextPreviousUrls[subfractionId]
+  previousSubfractionPreviewUrls.value = nextPreviousUrls
+}
 
 onMounted(() => {
   switcherResizeObserver = new ResizeObserver(() => {
@@ -559,8 +564,8 @@ onBeforeUnmount(() => {
 
 @keyframes preview-slide-in {
   from {
-    opacity: 0;
-    transform: translateX(22px) scale(1.03);
+    opacity: 1;
+    transform: translateX(100%) scale(1.03);
   }
 
   to {
@@ -576,8 +581,8 @@ onBeforeUnmount(() => {
   }
 
   to {
-    opacity: 0;
-    transform: translateX(-22px) scale(0.98);
+    opacity: 1;
+    transform: translateX(-100%) scale(0.98);
   }
 }
 
