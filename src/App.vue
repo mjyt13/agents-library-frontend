@@ -20,10 +20,7 @@ import { sas } from '@/interface/data/factions/sas/sas'
 import { seal } from '@/interface/data/factions/seal/seal'
 import { seal_frogman } from '@/interface/data/factions/seal_frogman/seal_frogman'
 import { separatist } from '@/interface/data/factions/separatist/separatist'
-import {
-  createRandomPreviewTimer,
-  type RandomPreviewCandidate,
-} from '@/utils/imagePreviewTimer'
+import { createRandomPreviewTimer, type RandomPreviewCandidate } from '@/utils/imagePreviewTimer'
 import { preloadImageUrls } from '@/utils/preloadImageUrls'
 
 interface NavItem {
@@ -150,6 +147,7 @@ const navGroups: NavGroup[] = [
 ]
 
 const openGroupId = ref<string | null>(null)
+const isHeaderCompact = ref(false)
 const groupPreviewUrls = ref<Record<string, string>>({})
 const previousGroupPreviewUrls = ref<Record<string, string>>({})
 const groupButtonPreviews = ref<Record<string, LoadedNavPreview>>({})
@@ -159,9 +157,19 @@ const loadingGroupPromises = new Map<string, Promise<void>>()
 let groupButtonPreviewTimers: Array<ReturnType<typeof createRandomPreviewTimer<string>>> = []
 let previewAnimationTimeouts: number[] = []
 
+function updateHeaderCompact() {
+  if (isHeaderCompact.value) {
+    isHeaderCompact.value = window.scrollY > 0
+    return
+  }
+
+  isHeaderCompact.value = window.scrollY > 32
+}
+
 const activeGroupId = computed(
   () => navGroups.find((group) => group.items.some((item) => item.to === route.path))?.id ?? null,
 )
+const headerClass = computed(() => (isHeaderCompact.value ? 'appHeaderCompact' : ''))
 
 async function loadGroupButtonImages() {
   const entries = await Promise.all(
@@ -359,11 +367,16 @@ function clearPreviousGroupPreviewUrl(groupId: string) {
   previousGroupPreviewUrls.value = nextPreviousUrls
 }
 
-onMounted(loadGroupButtonImages)
+onMounted(() => {
+  void loadGroupButtonImages()
+  updateHeaderCompact()
+  window.addEventListener('scroll', updateHeaderCompact, { passive: true })
+})
 
 onBeforeUnmount(() => {
   stopGroupButtonPreviewTimers()
   stopPreviewAnimations()
+  window.removeEventListener('scroll', updateHeaderCompact)
 })
 
 watch(
@@ -376,7 +389,7 @@ watch(
 
 <template>
   <div class="appShell">
-    <header class="appHeader">
+    <header class="appHeader" :class="headerClass">
       <RouterLink class="brand" to="/">
         <img alt="CS2 Agents Library" class="logo" src="@/assets/logo.png" width="72" height="72" />
         <div class="brandText">
@@ -454,52 +467,98 @@ watch(
 }
 
 .appHeader {
+  --header-padding-block: 0.75rem;
+  --header-padding-inline: 0.75rem;
+  --brand-padding-block: 0.75rem;
+  --brand-column-width: minmax(260px, 320px);
+  --logo-size: 48px;
+  --nav-dropdown-width: clamp(11rem, 24vw, 13rem);
+  --nav-dropdown-ratio: 3.75;
+  --nav-dropdown-text-scale: 0.92;
+
   position: sticky;
   top: 0;
   z-index: 100;
   background: #fff;
-  /* display: flex; */
-  /* flex-direction: column; */
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  padding: 1rem;
+  grid-template-columns: var(--brand-column-width) 1fr;
+  gap: 0.75rem;
+  padding: var(--header-padding-block) var(--header-padding-inline);
   line-height: 1.5;
   border-bottom: 1px solid #e5e5e5;
+  transition:
+    grid-template-columns 0.24s ease,
+    padding 0.24s ease,
+    box-shadow 0.24s ease;
+}
+
+.appHeaderCompact {
+  --header-padding-block: 0.45rem;
+  --brand-padding-block: 0.25rem;
+  --brand-column-width: minmax(220px, 0.8fr);
+  --logo-size: 40px;
+  --nav-dropdown-width: clamp(8rem, 36vw, 11.5rem);
+  --nav-dropdown-text-scale: 0.82;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
 .logo {
+  width: var(--logo-size);
+  height: var(--logo-size);
   flex-shrink: 0;
+  transition:
+    width 0.24s ease,
+    height 0.24s ease;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  padding: 4rem 0;
+  min-width: 0;
+  padding: var(--brand-padding-block) 0;
   gap: 1rem;
   color: inherit;
   text-decoration: none;
+  transition:
+    padding 0.24s ease,
+    gap 0.24s ease;
 }
 
 .brandText {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .brandText strong {
   font-size: 1.25rem;
+  line-height: 1.2;
 }
 
 .brandText span {
   color: #666;
   font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.appHeaderCompact .brand {
+  gap: 0.65rem;
+}
+
+.appHeaderCompact .brandText strong {
+  font-size: 1rem;
+}
+
+.appHeaderCompact .brandText span {
+  font-size: 0.78rem;
 }
 
 .mainNav {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 0.75rem;
 }
 
@@ -540,7 +599,8 @@ watch(
 
 .navDropdown {
   position: relative;
-  width: max(10rem,30rem);
+  width: var(--nav-dropdown-width);
+  transition: width 0.24s ease;
 }
 
 .navDropdownButton {
@@ -549,7 +609,7 @@ watch(
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: max(6rem, 8rem);
+  aspect-ratio: var(--nav-dropdown-ratio);
   padding: 0.35rem;
   overflow: hidden;
   cursor: pointer;
@@ -611,13 +671,13 @@ watch(
 }
 
 .navDropdownButtonText strong {
-  font-size: 1.1rem;
+  font-size: calc(1.1rem * var(--nav-dropdown-text-scale));
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
 .navDropdownButtonText small {
-  font-size: 0.82rem;
+  font-size: calc(0.82rem * var(--nav-dropdown-text-scale));
   opacity: 0.86;
 }
 
@@ -725,18 +785,68 @@ watch(
 
 @media (min-width: 1024px) {
   .appHeader {
-    display: grid;
-    grid-template-columns: minmax(260px, 340px) 1fr;
+    --header-padding-block: 1rem;
+    --header-padding-inline: 2rem;
+    --brand-padding-block: 0;
+    --brand-column-width: minmax(320px, 360px);
+    --logo-size: 72px;
+    --nav-dropdown-width: clamp(22rem, 30vw, 30rem);
+    --nav-dropdown-text-scale: 1;
+
     align-items: center;
-    padding: 1.5rem 2rem 1rem;
   }
 
-  .brand{
-    padding: 0 0;
+  .appHeaderCompact {
+    --header-padding-block: 0.55rem;
+    --brand-column-width: minmax(240px, 300px);
+    --logo-size: 48px;
+    --nav-dropdown-width: clamp(17rem, 24vw, 23rem);
+    --nav-dropdown-text-scale: 0.86;
   }
 
   .mainNav {
     justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .appHeader {
+    --brand-column-width: minmax(320px, 1fr);
+    --logo-size: 42px;
+    --nav-dropdown-width: 100%;
+    --nav-dropdown-ratio: 5;
+    --nav-dropdown-text-scale: 0.9;
+
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mainNav {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    overflow-x: visible;
+  }
+
+  .appHeaderCompact {
+    --brand-column-width: minmax(220px, 1fr);
+    --logo-size: 36px;
+    --nav-dropdown-ratio: 5.4;
+    --nav-dropdown-text-scale: 0.82;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .appHeader {
+    --brand-column-width: minmax(240px, 280px);
+    --logo-size: 38px;
+    --nav-dropdown-width: clamp(12rem, 28vw, 15rem);
+    --nav-dropdown-text-scale: 0.86;
+  }
+
+  .appHeaderCompact {
+    --brand-column-width: minmax(210px, 240px);
+    --logo-size: 32px;
+    --nav-dropdown-width: clamp(10.5rem, 26vw, 13rem);
   }
 }
 </style>

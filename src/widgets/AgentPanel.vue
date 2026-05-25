@@ -77,26 +77,25 @@ const next = () => {
 .agentPanel {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 1.5rem;
   width: 100%;
 }
 
 .agentHeader {
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 1.5rem;
   width: 100%;
-  max-width: 900px;
+  padding: 0.75rem;
   box-shadow: 0px 10px 16px 2px rgba(0, 0, 0, 0.2);
 }
 
 .agentPreview {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: min(420px, 58vh);
   object-fit: contain;
-  flex-shrink: 0;
 }
 
 .agentPreviewPlaceholder {
@@ -119,14 +118,16 @@ const next = () => {
 }
 
 .agentMeta h1 {
-  font-size: 2rem;
+  font-size: 1.45rem;
   font-weight: bold;
+  line-height: 1.25;
   margin: 0;
 }
 
 .carousel {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
 }
 
@@ -139,16 +140,26 @@ const next = () => {
 }
 
 .agentDescription {
-  max-width: 900px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   font-size: 1rem;
   line-height: 1.6;
   opacity: 0.85;
 }
 
 .agentComment {
-  max-width: 900px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.5;
+}
+
+@media (min-width: 1025px) {
+  .agentPreview {
+    height: 280px;
+  }
 }
 </style>

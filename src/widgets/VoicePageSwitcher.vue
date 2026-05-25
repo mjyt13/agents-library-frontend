@@ -46,37 +46,54 @@ const emit = defineEmits<{
 
 .voicePageSwitcher {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  align-items: stretch;
   justify-content: center;
   width: 100%;
   max-width: 800px;
+  overflow: hidden;
+  border: 1px solid #cfd5dd;
+  border-radius: 10px;
+  background: #fff;
 }
 
 .voicePageSwitcher button {
   display: inline-flex;
+  flex: 1 1 0;
   align-items: center;
+  justify-content: center;
   gap: 0.45rem;
+  min-width: 0;
   padding: 0.55rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 10px;
+  border: 0;
+  border-left: 1px solid #cfd5dd;
   background: #fff;
   cursor: pointer;
+  text-align: center;
   transition:
-    border-color 0.15s ease,
     background-color 0.15s ease,
     color 0.15s ease;
 }
 
+.voicePageSwitcher button:first-child {
+  border-left: 0;
+}
+
 .voicePageSwitcher button.active {
   color: #fff;
-  border-color: #222;
   background: #222;
 }
 
 .voicePageMeta {
   opacity: 0.7;
   font-size: 0.9rem;
+}
+
+@media (max-width: 520px) {
+  .voicePageSwitcher button {
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.55rem 0.35rem;
+  }
 }
 
 .voicePageDescription,

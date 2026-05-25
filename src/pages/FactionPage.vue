@@ -5,10 +5,7 @@ import type { ImagePreviewDuration } from '@/core/models/imagePreview'
 import { SubfractionType, SubfractionTypeRus } from '@/core/models/subfraction'
 import type { SubfractionType as SubfractionTypeValue } from '@/core/models/subfraction'
 import SubfractionPage from '@/pages/SubfractionPage.vue'
-import {
-  createRandomPreviewTimer,
-  type RandomPreviewCandidate,
-} from '@/utils/imagePreviewTimer'
+import { createRandomPreviewTimer, type RandomPreviewCandidate } from '@/utils/imagePreviewTimer'
 
 const props = defineProps<{
   faction: Faction
@@ -97,7 +94,6 @@ function startSwitcherDrag(event: PointerEvent) {
   switcherPointerId = event.pointerId
   switcherStartX = event.clientX
   switcherStartScrollLeft = viewport.scrollLeft
-
 }
 
 function moveSwitcherDrag(event: PointerEvent) {
@@ -125,7 +121,6 @@ function moveSwitcherDrag(event: PointerEvent) {
   }
 
   viewport.scrollLeft = switcherStartScrollLeft - distance
-  event.preventDefault()
 }
 
 function finishSwitcherDrag(event: PointerEvent) {
@@ -318,14 +313,10 @@ watch(currentId, async (id) => {
 
 watch(() => props.faction.id, loadSubfractionPreviews, { immediate: true })
 
-watch(
-  () => props.faction.subfractions.length,
-  updateSwitcherOverflow,
-  { immediate: true },
-)
+watch(() => props.faction.subfractions.length, updateSwitcherOverflow, { immediate: true })
 
 function clearPreviousSubfractionPreviewUrl(subfractionId: string) {
-  const nextPreviousUrls = {...previousSubfractionPreviewUrls.value}
+  const nextPreviousUrls = { ...previousSubfractionPreviewUrls.value }
   delete nextPreviousUrls[subfractionId]
   previousSubfractionPreviewUrls.value = nextPreviousUrls
 }
@@ -459,7 +450,7 @@ onBeforeUnmount(() => {
 
 .switcher--carousel .switcher__viewport {
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-x;
 }
 
 .switcher__viewport--dragging {
