@@ -1,0 +1,76 @@
+// id категорий голосовых линий (значения = id групп в buildVoicePages).
+export const voiceCategory = {
+  // Страница 1
+  AFFIRMATIVE: 'affirmative',
+  NEGATIVE: 'negative',
+  AGREE: 'agree',
+  TICKING_DOWN: 'ticking_down',
+  CLEAR: 'clear',
+  CHEER: 'cheer',
+  COMPLIMENT: 'compliment',
+  HEARD: 'heard',
+  START: 'start',
+  LOSE: 'lose',
+  WAITING: 'waiting',
+  WON: 'won',
+  WINNING: 'winning',
+  SORRY: 'sorry',
+  LETS_GO: 'lets_go',
+  FRIENDLY_FIRE: 'friendly_fire',
+  TEN_SECS: 'ten_secs',
+  THANKS: 'thanks',
+  DECOY: 'decoy',
+  FIRE_MOLOTOV: 'fire_molotov',
+  FLASHBANG: 'flashbang',
+  HE_GRENADE: 'he_grenade',
+  SMOKE: 'smoke',
+
+  // Страница 2
+  ATTACK: 'attack',
+  COVERING: 'covering',
+  DISAGREE: 'disagree',
+  NONE_LEFT: 'none_left',
+  FOLLOWING: 'following',
+  I_KILLED_ENEMY: 'i_killed_enemy',
+  PLANTING_DEFUSING: 'planting_defusing',
+  IN_POSITION: 'in_position',
+  I_GOT_LAST: 'i_got_last',
+  ON_MY_WAY: 'on_my_way',
+  REPORTING_IN: 'reporting_in',
+  REQUEST_FOLLOW_ME: 'request_follow_me',
+  REQUEST_HELP: 'request_help',
+  REQUEST_HOLD_POSITION: 'request_hold_position',
+  LOSING: 'losing',
+  SEE_DEAD_ENEMY: 'see_dead_enemy',
+  ENEMY_SPOTTED: 'enemy_spotted',
+  REQUEST_LEADER: 'request_leader',
+
+  // Страница 3
+  BLINDED: 'blinded',
+  BOMB_PLANTED: 'bomb_planted',
+  COUNTDOWN: 'countdown',
+  DEATH: 'death',
+  ONE_LEFT: 'one_left',
+  TWO_LEFT: 'two_left',
+  THREE_LEFT: 'three_left',
+  FRIEND_PLANTING: 'friend_planting',
+  I_KILLED_SNIPER: 'i_killed_sniper',
+  LOCATION_MID: 'location_mid',
+  PINNED: 'pinned',
+  REQUEST_BACKUP: 'request_backup',
+  REQUEST_FALLBACK: 'request_fallback',
+  REQUEST_COVER_ME: 'request_cover_me',
+  REQUEST_WEAPON: 'request_weapon',
+  MANY_ENEMIES_SPOTTED: 'many_enemies_spotted',
+  SNIPER: 'sniper',
+  SEE_BOMB: 'see_bomb',
+  TAKING_FIRE: 'taking_fire',
+  REGROUP: 'regroup',
+  SCARED: 'scared',
+} as const
+
+// Союзный тип всех id: 'affirmative' | 'negative' | … | 'scared'
+export type VoiceCategoryId = (typeof voiceCategory)[keyof typeof voiceCategory]
+
+// Когда нужен список/Set id (например для getRandomAudio).
+export const voiceCategoryIds: VoiceCategoryId[] = Object.values(voiceCategory)

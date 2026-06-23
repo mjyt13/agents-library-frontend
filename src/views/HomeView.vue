@@ -1,14 +1,25 @@
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
+import { onBeforeUnmount, onMounted } from 'vue'
 import { getRandomAudio } from '@/utils/getRandomAudio'
 import { debounce } from '@/utils/debounce'
 
 const NAV_VIDEO_FALLBACK_URL = '/landing.mp4'
 
 const player = new Audio()
+player.preload = 'auto'
+
+// первый звук резолвим и буферизуем заранее, чтобы первый клик играл мгновенно
+let preparedUrl: string | null = null
 
 const playRandomAudio = debounce(
   async () => {
+    if (preparedUrl) {
+      preparedUrl = null
+      player.currentTime = 0
+      void player.play()
+      return
+    }
+
     const url = await getRandomAudio()
     if (!url) return
 
@@ -20,6 +31,15 @@ const playRandomAudio = debounce(
   250,
   { leading: true },
 )
+
+onMounted(async () => {
+  const url = await getRandomAudio()
+  if (!url) return
+
+  preparedUrl = url
+  player.src = url
+  player.load()
+})
 
 onBeforeUnmount(() => player.pause())
 </script>
@@ -82,7 +102,7 @@ onBeforeUnmount(() => player.pause())
   object-fit: cover;
   object-position: center;
   z-index: 0;
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 .eyebrow {
