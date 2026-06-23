@@ -506,8 +506,8 @@ onBeforeUnmount(() => {
   inset: 0;
   z-index: 0;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.7)),
-    var(--subfraction-preview, none) center / cover no-repeat;
+    linear-gradient(rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.6)),
+    var(--subfraction-preview, none) 40% 5% / cover no-repeat;
   animation: preview-slide-in 0.6s ease both;
 }
 
@@ -550,7 +550,7 @@ onBeforeUnmount(() => {
 .switcher button.active .switcher__buttonPreview {
   background:
     linear-gradient(rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0.62)),
-    var(--subfraction-preview, none) center / cover no-repeat;
+    var(--subfraction-preview, none) 40% 5% / cover no-repeat;
 }
 
 @keyframes preview-slide-in {

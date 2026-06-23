@@ -1,17 +1,41 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
-const NAV_PREVIEW_FALLBACK_URL = '/mock.png'
+import { onBeforeUnmount } from 'vue'
+import { getRandomAudio } from '@/utils/getRandomAudio'
+import { debounce } from '@/utils/debounce'
 
-function getPreviewStyle(url: string): Record<string, string> {
-  return url ? { '--hero-preview': `url("${url}")` } : {}
-}
+const NAV_VIDEO_FALLBACK_URL = '/landing.mp4'
 
+const player = new Audio()
+
+const playRandomAudio = debounce(
+  async () => {
+    const url = await getRandomAudio()
+    if (!url) return
+
+    player.pause()
+    player.currentTime = 0
+    player.src = url
+    void player.play()
+  },
+  250,
+  { leading: true },
+)
+
+onBeforeUnmount(() => player.pause())
 </script>
 
 <template>
   <main
-  :style="getPreviewStyle(NAV_PREVIEW_FALLBACK_URL)"
   class="homeView">
+    <video
+      class="heroVideo"
+      autoplay
+      muted
+      loop
+      playsinline
+      poster="/mock.png">
+      <source :src="NAV_VIDEO_FALLBACK_URL" type="video/mp4" />
+    </video>
     <section class="hero">
       <p class="eyebrow">CS2 Agents Library</p>
       <h1>Слушай голосовые линии по фракциям и подфракциям.</h1>
@@ -19,92 +43,9 @@ function getPreviewStyle(url: string): Record<string, string> {
         Сейчас библиотека собирается вокруг архитектуры фракций: можно открыть нужную сторону,
         переключиться между подфракциями и послушать реплики конкретных агентов.
       </p>
+      <button @click="playRandomAudio">Play Random Audio</button>
     </section>
 
-    <section class="factions">
-      <RouterLink class="factionCard" to="/professionals">
-        <strong>Professionals</strong>
-        <span>Женские и мастерские подфракции с уже собранной структурой голосов.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/sabre">
-        <strong>Sabre</strong>
-        <span>Новая фракция с подфракциями `male` и `master`, агентами и подключёнными озвучками.</span>
-      </RouterLink>
-      <RouterLink class="factionCard" to="/elite-crew">
-        <strong>Elite Crew</strong>
-        <span>Leet-подфракции `male` и `master` с новыми файлами озвучки и привязанными агентами.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/swat-fbi">
-        <strong>SWAT/FBI</strong>
-        <span>Объединённая страница для `swat_fem`, `swat_male`, `master_fbi` и `master_swat`.</span>
-      </RouterLink>
-      <RouterLink class="factionCard" to="/fbi-old">
-        <strong>FBI (old)</strong>
-        <span>Legacy FBI voice lines collected on a dedicated faction page.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/sas">
-        <strong>SAS</strong>
-        <span>British counter-terror faction with its own voice pack and subfraction page.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/gsg-9">
-        <strong>GSG-9</strong>
-        <span>German faction page with separate audio records and agent preview.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/gign">
-        <strong>GIGN</strong>
-        <span>French counter-terror voice set with a dedicated default agent and grouped audio lines.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/idf">
-        <strong>IDF</strong>
-        <span>Single-subfraction faction page for browsing Israeli voice lines and default model art.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/phoenix">
-        <strong>Phoenix Connexion</strong>
-        <span>Terrorist faction page with converted OGG lines and a linked default Phoenix preview.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/separatist">
-        <strong>Separatist</strong>
-        <span>Faction page with grouped audio content and a connected default agent image.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/anarchist">
-        <strong>Anarchist</strong>
-        <span>New faction entry for listening through the converted voice pack by subfraction.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/gandarmerie">
-        <strong>Gendarmerie</strong>
-        <span>Male and master counter-terror subfractions with newly linked agent placeholders and audio.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/guerilla">
-        <strong>Guerilla</strong>
-        <span>Expanded terrorist faction with female, male and master voice sets connected to new agents.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/pirate">
-        <strong>Pirate</strong>
-        <span>Dedicated faction page for the pirate voice pack with its default agent preview.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/seal">
-        <strong>SEAL</strong>
-        <span>Faction page with male and master audio sets, ready for future agent art without breaking layout.</span>
-      </RouterLink>
-
-      <RouterLink class="factionCard" to="/seal-frogman">
-        <strong>SEAL Frogman</strong>
-        <span>Separate male and master frogman voice sets with connected agent cards for the new placeholders.</span>
-      </RouterLink>
-    </section>
   </main>
 </template>
 
@@ -112,15 +53,36 @@ function getPreviewStyle(url: string): Record<string, string> {
 .homeView {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
   gap: 2rem;
   padding: 2rem 1rem 3rem;
   background:
     linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
     var(--hero-preview, none) center / cover no-repeat;
+  position: relative;
+  overflow: hidden;
 }
 
 .hero {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1em 0 2rem 0;
   max-width: 760px;
+  position: relative;
+  z-index: 1;
+}
+
+.heroVideo{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  opacity: 0.4;
 }
 
 .eyebrow {
@@ -146,42 +108,20 @@ function getPreviewStyle(url: string): Record<string, string> {
   color: #444;
 }
 
-.factions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+button {
+  padding: 1.75rem 4.5rem;
+  margin-top: 4rem;
+  width: fit-content;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(90deg, #c8c8c8, #575757);
+  border: none;
+  box-shadow: 0 10px 6px rgba(0, 0, 0, 0.2);
+  border-radius:8px;
+  cursor: pointer;
+  align-self: center;
+  opacity: 1;
 }
 
-.factionCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.25rem;
-  border: 1px solid #d8d8d8;
-  border-radius: 14px;
-  color: inherit;
-  text-decoration: none;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 244, 244, 0.96)),
-    linear-gradient(135deg, rgba(17, 17, 17, 0.04), rgba(17, 17, 17, 0));
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease;
-}
-
-.factionCard:hover {
-  transform: translateY(-2px);
-  border-color: #999;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-}
-
-.factionCard strong {
-  font-size: 1.15rem;
-}
-
-.factionCard span {
-  line-height: 1.5;
-  color: #555;
-}
 </style>

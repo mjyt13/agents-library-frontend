@@ -655,7 +655,7 @@ watch(
   z-index: 1;
   background:
     linear-gradient(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.22)),
-    var(--nav-preview, none) center / cover no-repeat;
+    var(--nav-preview, none) 40% 15% / cover no-repeat;
   animation: preview-slide-in 0.6s ease both;
 }
 
@@ -664,10 +664,9 @@ watch(
 }
 
 .navDropdownButton.active .navDropdownButtonPreview {
-  /* Active button overlay opacity: change rgba alpha here separately. */
   background:
     linear-gradient(rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.06)),
-    var(--nav-preview, none) center / cover no-repeat;
+    var(--nav-preview, none) 40% 15% / cover no-repeat;
 }
 
 .navDropdownButtonText strong {
@@ -738,7 +737,7 @@ watch(
   z-index: 0;
   background:
     linear-gradient(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.22)),
-    var(--nav-preview, none) center / cover no-repeat;
+    var(--nav-preview, none) 40% 5% / cover no-repeat;
 }
 
 .navDropdownItemText {
