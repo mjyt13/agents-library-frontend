@@ -347,7 +347,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="factionPage">
-    <div class="switcher" :class="{ 'switcher--carousel': isCarousel }">
+    <div
+      v-if="faction.subfractions.length > 1"
+      class="switcher"
+      :class="{ 'switcher--carousel': isCarousel }"
+    >
       <button
         v-if="isCarousel"
         class="switcher__control"
@@ -467,6 +471,7 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 0.75rem;
   justify-content: center;
+  min-height: 8rem;
 }
 
 .switcher--carousel .switcher__track {

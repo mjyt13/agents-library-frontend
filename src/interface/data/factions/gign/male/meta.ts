@@ -7,4 +7,3 @@ export const meta: SubfractionMeta = {
   name: SubfractionType.MALE,
   agents: [gign_default],
 }
-

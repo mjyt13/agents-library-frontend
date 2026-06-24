@@ -42,7 +42,9 @@ export const createAudioSourceFromModules = (
     return `${import.meta.env.BASE_URL}src/interface/data/${assetPath}`
   }
 
-  const pages = buildVoicePages(createAudioContentFromFiles(audioFiles, basePath, categoryNames, resolveAudioUrl))
+  const pages = buildVoicePages(
+    createAudioContentFromFiles(audioFiles, basePath, categoryNames, resolveAudioUrl),
+  )
 
   return {
     voicePages: pages.map((page) => ({

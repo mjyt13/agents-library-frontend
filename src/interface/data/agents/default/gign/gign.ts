@@ -5,5 +5,5 @@ export const gign_default: Agent = {
   name: 'GIGN',
   description: '',
   comment: 'gign placeholder',
-  photos: ['agents/default/gign/gign.jpg'],
+  photos: ['agents/default/gign/gign.webp'],
 }

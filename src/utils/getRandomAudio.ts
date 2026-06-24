@@ -2,7 +2,13 @@ import { factions } from '@/interface/data/factions'
 import { voiceCategory } from '@/utils/voiceCategories'
 
 // id категорий из buildVoicePages — отсюда берём случайную реплику на главной.
-const RANDOM_GROUP_IDS = new Set<string>([voiceCategory.AFFIRMATIVE, voiceCategory.AGREE, voiceCategory.CHEER, voiceCategory.COMPLIMENT, voiceCategory.WINNING])
+const RANDOM_GROUP_IDS = new Set<string>([
+  voiceCategory.AFFIRMATIVE,
+  voiceCategory.AGREE,
+  voiceCategory.CHEER,
+  voiceCategory.COMPLIMENT,
+  voiceCategory.WINNING,
+])
 
 const pickRandom = <T>(items: readonly T[]): T | undefined =>
   items[Math.floor(Math.random() * items.length)]

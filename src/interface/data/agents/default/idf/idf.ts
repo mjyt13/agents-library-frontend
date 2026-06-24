@@ -5,5 +5,5 @@ export const idf_default: Agent = {
   name: 'IDF',
   description: '',
   comment: 'idf placeholder',
-  photos: ['agents/default/idf/IDF1280x720.jpg'],
+  photos: ['agents/default/idf/IDF1280x720.webp'],
 }

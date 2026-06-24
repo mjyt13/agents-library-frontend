@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getRandomAudio } from '@/utils/getRandomAudio'
 import { debounce } from '@/utils/debounce'
 
 const NAV_VIDEO_FALLBACK_URL = '/landing.mp4'
+const NAV_IMAGE_FALLBACK_URL = '/mock.png'
+
+// показываем картинку, пока у видео не появился первый кадр (loadeddata)
+const isVideoReady = ref(false)
 
 const player = new Audio()
 player.preload = 'auto'
 
-// первый звук резолвим и буферизуем заранее, чтобы первый клик играл мгновенно
 let preparedUrl: string | null = null
 
 const playRandomAudio = debounce(
@@ -45,15 +48,14 @@ onBeforeUnmount(() => player.pause())
 </script>
 
 <template>
-  <main
-  class="homeView">
-    <video
-      class="heroVideo"
-      autoplay
-      muted
-      loop
-      playsinline
-      poster="/mock.png">
+  <main class="homeView">
+    <img
+      v-if="!isVideoReady"
+      :src="NAV_IMAGE_FALLBACK_URL"
+      alt="CS VOICE LINES"
+      class="heroImage"
+    />
+    <video class="heroVideo" autoplay muted loop playsinline @canplay="isVideoReady = true">
       <source :src="NAV_VIDEO_FALLBACK_URL" type="video/mp4" />
     </video>
     <section class="hero">
@@ -65,7 +67,6 @@ onBeforeUnmount(() => player.pause())
       </p>
       <button @click="playRandomAudio">Play Random Audio</button>
     </section>
-
   </main>
 </template>
 
@@ -94,7 +95,8 @@ onBeforeUnmount(() => player.pause())
   z-index: 1;
 }
 
-.heroVideo{
+.heroVideo,
+.heroImage {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -138,10 +140,9 @@ button {
   background: linear-gradient(90deg, #c8c8c8, #575757);
   border: none;
   box-shadow: 0 10px 6px rgba(0, 0, 0, 0.2);
-  border-radius:8px;
+  border-radius: 8px;
   cursor: pointer;
   align-self: center;
   opacity: 1;
 }
-
 </style>

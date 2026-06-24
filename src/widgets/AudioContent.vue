@@ -13,7 +13,8 @@ const resolvedItems = ref<Record<string, AudioItem[]>>({})
 const getSectionId = (audioGroup: AudioContent): string => audioGroup.meta.id
 
 const isMissingGroup = (audioGroup: AudioContent): boolean =>
-  audioGroup.meta.isMissing === true || (audioGroup.meta.itemCount ?? audioGroup.audioItems.length) === 0
+  audioGroup.meta.isMissing === true ||
+  (audioGroup.meta.itemCount ?? audioGroup.audioItems.length) === 0
 
 const isSectionOpen = (sectionId: string): boolean => openSections.value[sectionId] ?? false
 const isSectionLoading = (sectionId: string): boolean => loadingSections.value[sectionId] ?? false
@@ -32,7 +33,9 @@ const resolveSectionItems = async (audioGroup: AudioContent): Promise<void> => {
   loadingSections.value[sectionId] = true
 
   try {
-    resolvedItems.value[sectionId] = await Promise.all(audioGroup.audioItems.map((loadItem) => loadItem()))
+    resolvedItems.value[sectionId] = await Promise.all(
+      audioGroup.audioItems.map((loadItem) => loadItem()),
+    )
   } finally {
     loadingSections.value[sectionId] = false
   }
@@ -66,7 +69,9 @@ watch(() => props.audioContent, resetSections)
         <h3>{{ audioGroup.meta.name }}</h3>
         <span v-if="audioGroup.meta.isMissing" class="missingBadge">Нет</span>
         <span v-else class="toggleMeta">
-          <span class="itemCount">{{ audioGroup.meta.itemCount ?? audioGroup.audioItems.length }}</span>
+          <span class="itemCount">{{
+            audioGroup.meta.itemCount ?? audioGroup.audioItems.length
+          }}</span>
           <span class="toggleIcon" :class="isSectionOpen(audioGroup.meta.id) ? 'open' : ''">▼</span>
         </span>
       </button>
@@ -78,7 +83,12 @@ watch(() => props.audioContent, resetSections)
           Загружаю голосовые линии...
         </div>
 
-        <div v-else v-for="audio in getSectionItems(audioGroup.meta.id)" :key="audio.id" class="audioItem">
+        <div
+          v-else
+          v-for="audio in getSectionItems(audioGroup.meta.id)"
+          :key="audio.id"
+          class="audioItem"
+        >
           <p class="audioTitle">{{ audio.title }}</p>
           <audio :src="audio.url" class="audioPlayer" controls preload="none"></audio>
         </div>

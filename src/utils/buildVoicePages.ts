@@ -1,7 +1,4 @@
-import type {
-  AudioContent,
-  VoicePageId,
-} from '@/core/models/audioContent'
+import type { AudioContent, VoicePageId } from '@/core/models/audioContent'
 import { voiceCategory, type VoiceCategoryId } from '@/utils/voiceCategories'
 
 export interface VoicePage {
@@ -58,7 +55,12 @@ const pageTwoCategories: VoiceCategoryConfig[] = [
   { id: voiceCategory.REPORTING_IN, name: 'Reporting in', page: 2, alwaysShow: true },
   { id: voiceCategory.REQUEST_FOLLOW_ME, name: 'Follow me', page: 2, alwaysShow: true },
   { id: voiceCategory.REQUEST_HELP, name: 'Request Help', page: 2, alwaysShow: true },
-  { id: voiceCategory.REQUEST_HOLD_POSITION, name: 'Hold this position', page: 2, alwaysShow: true },
+  {
+    id: voiceCategory.REQUEST_HOLD_POSITION,
+    name: 'Hold this position',
+    page: 2,
+    alwaysShow: true,
+  },
   { id: voiceCategory.LOSING, name: 'Losing', page: 2, alwaysShow: true },
   { id: voiceCategory.SEE_DEAD_ENEMY, name: 'I see dead enemy', page: 2, alwaysShow: true },
   { id: voiceCategory.ENEMY_SPOTTED, name: 'Enemy spotted', page: 2, alwaysShow: true },
@@ -81,7 +83,12 @@ const pageThreeCategories: VoiceCategoryConfig[] = [
   { id: voiceCategory.REQUEST_FALLBACK, name: 'Request Fallback', page: 3, alwaysShow: true },
   { id: voiceCategory.REQUEST_COVER_ME, name: 'Cover me', page: 3, alwaysShow: true },
   { id: voiceCategory.REQUEST_WEAPON, name: 'Give me weapon', page: 3, alwaysShow: true },
-  { id: voiceCategory.MANY_ENEMIES_SPOTTED, name: 'Many enemies spotted', page: 3, alwaysShow: true },
+  {
+    id: voiceCategory.MANY_ENEMIES_SPOTTED,
+    name: 'Many enemies spotted',
+    page: 3,
+    alwaysShow: true,
+  },
   { id: voiceCategory.SNIPER, name: 'Sniper', page: 3, alwaysShow: true },
   { id: voiceCategory.SEE_BOMB, name: 'I see bomb', page: 3, alwaysShow: true },
   { id: voiceCategory.TAKING_FIRE, name: 'Taking fire', page: 3, alwaysShow: true },
@@ -327,7 +334,8 @@ export const buildVoicePages = (audioGroups: AudioContent[]): VoicePage[] => {
 
     if (existing) {
       existing.audioItems.push(...group.audioItems)
-      existing.meta.itemCount = (existing.meta.itemCount ?? 0) + (group.meta.itemCount ?? group.audioItems.length)
+      existing.meta.itemCount =
+        (existing.meta.itemCount ?? 0) + (group.meta.itemCount ?? group.audioItems.length)
       continue
     }
 

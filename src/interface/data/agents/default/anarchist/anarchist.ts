@@ -5,5 +5,5 @@ export const anarchist_default: Agent = {
   name: 'Anarchist',
   description: '',
   comment: 'anarchist placeholder',
-  photos: ['agents/default/anarchist/Anarchist1280x720.jpg'],
+  photos: ['agents/default/anarchist/Anarchist1280x720.webp'],
 }

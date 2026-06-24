@@ -5,5 +5,5 @@ export const separatist_default: Agent = {
   name: 'Separatist',
   description: '',
   comment: 'separatist placeholder',
-  photos: ['agents/default/separatist/basq.jpg'],
+  photos: ['agents/default/separatist/basq.webp'],
 }

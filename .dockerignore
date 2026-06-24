@@ -1,0 +1,28 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+*.log
+npm-debug.log*
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+
+# тесты и отчёты — в образе не нужны
+e2e
+playwright-report
+test-results
+coverage
+
+# скрипты обслуживания (скрейп/сжатие) не участвуют в сборке статики
+scripts
+
+# docs
+*.md
+
+# сам docker-контекст
+Dockerfile
+.dockerignore

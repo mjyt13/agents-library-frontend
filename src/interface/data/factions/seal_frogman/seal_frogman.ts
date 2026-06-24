@@ -8,9 +8,5 @@ export const seal_frogman: Faction = {
   id: 'seal_frogman',
   name: 'SEAL Frogman',
   previews,
-  subfractions: [
-    seal_frogman_male,
-    seal_frogman_master_female,
-    seal_frogman_master_male,
-  ],
+  subfractions: [seal_frogman_male, seal_frogman_master_female, seal_frogman_master_male],
 }

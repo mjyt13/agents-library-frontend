@@ -5,5 +5,5 @@ export const ricksaw: Agent = {
   name: 'Lt. Commander Ricksaw',
   description: '',
   comment: 'professional placeholder',
-  photos: ['agents/default/ricksaw/images.jpg'],
+  photos: ['agents/ricksaw/images.webp'],
 }

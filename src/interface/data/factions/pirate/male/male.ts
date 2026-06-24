@@ -6,4 +6,3 @@ export const pirate_male: Subfraction = {
   loadAudioSource: () => import('./audio').then((module) => module.audioSource),
   loadPreviewSource: () => import('./previews').then((module) => module.previewSource),
 }
-

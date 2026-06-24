@@ -7,4 +7,3 @@ export const meta: SubfractionMeta = {
   name: SubfractionType.MASTER_MALE,
   agents: [wetsox],
 }
-

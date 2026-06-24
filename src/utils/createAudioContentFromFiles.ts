@@ -25,7 +25,8 @@ const buildCategoryId = (fileName: string): string => {
   return withoutExtension
 }
 
-const buildItemTitle = (categoryName: string, index: number): string => `${categoryName} ${index + 1}`
+const buildItemTitle = (categoryName: string, index: number): string =>
+  `${categoryName} ${index + 1}`
 
 /**
  * Создание аудиофайлов
@@ -71,13 +72,10 @@ export const createAudioContentFromFiles = (
           name: categoryName,
           itemCount: audioItems.length,
         },
-        audioItems: audioItems.map(
-          (item): (() => Promise<AudioItem>) =>
-            async () => ({
-              ...item,
-              url: await resolveAudioUrl(item.url.slice(basePath.length + 1), item.url),
-            }),
-        ),
+        audioItems: audioItems.map((item): (() => Promise<AudioItem>) => async () => ({
+          ...item,
+          url: await resolveAudioUrl(item.url.slice(basePath.length + 1), item.url),
+        })),
       }
     })
 }

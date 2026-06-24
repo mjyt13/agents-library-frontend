@@ -5,5 +5,5 @@ export const seal_default: Agent = {
   name: 'SEAL',
   description: '',
   comment: 'seal placeholder',
-  photos: ['agents/default/seal/seal.jpg'],
+  photos: ['agents/default/seal/seal.webp'],
 }
