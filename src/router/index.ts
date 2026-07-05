@@ -94,6 +94,11 @@ const router = createRouter({
       name: 'seal-frogman',
       component: () => import('@/views/SealFrogmanView.vue'),
     },
+    {
+      path: '/crop-inspector',
+      name: 'crop-inspector',
+      component: () => import('@/views/CropInspectorView.vue'),
+    },
   ],
 })
 

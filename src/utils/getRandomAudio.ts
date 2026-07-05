@@ -8,6 +8,7 @@ const RANDOM_GROUP_IDS = new Set<string>([
   voiceCategory.CHEER,
   voiceCategory.COMPLIMENT,
   voiceCategory.WINNING,
+  voiceCategory.START
 ])
 
 const pickRandom = <T>(items: readonly T[]): T | undefined =>

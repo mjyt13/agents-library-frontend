@@ -21,7 +21,7 @@ import { seal } from '@/interface/data/factions/seal/seal'
 import { seal_frogman } from '@/interface/data/factions/seal_frogman/seal_frogman'
 import { separatist } from '@/interface/data/factions/separatist/separatist'
 import { createRandomPreviewTimer, type RandomPreviewCandidate } from '@/utils/imagePreviewTimer'
-import { preloadImageUrls } from '@/utils/preloadImageUrls'
+import { decodeImageUrl, preloadImageUrls } from '@/utils/preloadImageUrls'
 
 interface NavItem {
   to: string
@@ -316,7 +316,10 @@ function getGroupPreviewCandidates(group: NavGroup): RandomPreviewCandidate<stri
 function createGroupButtonPreviewTimer(group: NavGroup) {
   return createRandomPreviewTimer({
     getCandidates: () => getGroupPreviewCandidates(group),
-    onChange: (url) => setGroupPreviewUrl(group.id, url),
+    onChange: async (url) => {
+      await decodeImageUrl(url)
+      setGroupPreviewUrl(group.id, url)
+    },
   })
 }
 

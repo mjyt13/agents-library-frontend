@@ -6,6 +6,7 @@ import { SubfractionType, SubfractionTypeRus } from '@/core/models/subfraction'
 import type { SubfractionType as SubfractionTypeValue } from '@/core/models/subfraction'
 import SubfractionPage from '@/pages/SubfractionPage.vue'
 import { createRandomPreviewTimer, type RandomPreviewCandidate } from '@/utils/imagePreviewTimer'
+import { decodeImageUrl } from '@/utils/preloadImageUrls'
 
 const props = defineProps<{
   faction: Faction
@@ -200,7 +201,10 @@ function getSubfractionPreviewCandidates(subfractionId: string): RandomPreviewCa
 function createSubfractionPreviewTimer(subfractionId: string) {
   return createRandomPreviewTimer({
     getCandidates: () => getSubfractionPreviewCandidates(subfractionId),
-    onChange: (url) => setSubfractionPreviewUrl(subfractionId, url),
+    onChange: async (url) => {
+      await decodeImageUrl(url)
+      setSubfractionPreviewUrl(subfractionId, url)
+    },
   })
 }
 
@@ -512,7 +516,7 @@ onBeforeUnmount(() => {
   z-index: 0;
   background:
     linear-gradient(rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.6)),
-    var(--subfraction-preview, none) 40% 5% / cover no-repeat;
+    var(--subfraction-preview, none) 40% 15% / cover no-repeat;
   animation: preview-slide-in 0.6s ease both;
 }
 
@@ -555,7 +559,7 @@ onBeforeUnmount(() => {
 .switcher button.active .switcher__buttonPreview {
   background:
     linear-gradient(rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0.62)),
-    var(--subfraction-preview, none) 40% 5% / cover no-repeat;
+    var(--subfraction-preview, none) 40% 15% / cover no-repeat;
 }
 
 @keyframes preview-slide-in {
