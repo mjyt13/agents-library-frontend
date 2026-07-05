@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Faction } from '@/core/models/faction'
-import type { ImagePreviewDuration } from '@/core/models/imagePreview'
 import { SubfractionType, SubfractionTypeRus } from '@/core/models/subfraction'
 import type { SubfractionType as SubfractionTypeValue } from '@/core/models/subfraction'
+import { useCrossfadePreview } from '@/composables/useCrossfadePreview'
 import SubfractionPage from '@/pages/SubfractionPage.vue'
-import { createRandomPreviewTimer, type RandomPreviewCandidate } from '@/utils/imagePreviewTimer'
-import { decodeImageUrl } from '@/utils/preloadImageUrls'
 
 const props = defineProps<{
   faction: Faction
@@ -22,19 +20,12 @@ const subfractionLabels: Record<SubfractionTypeValue, string> = {
   [SubfractionType.MASTER_SWAT]: SubfractionTypeRus.MASTER_SWAT,
 }
 
-interface LoadedSubfractionPreview {
-  durationMs: ImagePreviewDuration
-  images: string[]
-}
-
 const currentId = ref(props.faction.subfractions[0]?.meta.id ?? '')
 const switcherViewport = ref<HTMLElement | null>(null)
 const switcherTrack = ref<HTMLElement | null>(null)
 const isSwitcherDragging = ref(false)
 const isCarousel = ref(false)
-const subfractionPreviews = ref<Record<string, LoadedSubfractionPreview>>({})
-const subfractionPreviewUrls = ref<Record<string, string>>({})
-const previousSubfractionPreviewUrls = ref<Record<string, string>>({})
+const subfractionPreview = useCrossfadePreview('--subfraction-preview', '/mock.webp')
 
 const dragThreshold = 5
 let isSwitcherPointerDown = false
@@ -44,8 +35,6 @@ let switcherStartX = 0
 let switcherStartScrollLeft = 0
 let switcherSmoothFrame = 0
 let switcherResizeObserver: ResizeObserver | null = null
-let subfractionPreviewTimers: Array<ReturnType<typeof createRandomPreviewTimer<string>>> = []
-let subfractionPreviewAnimationTimeouts: number[] = []
 
 const currentSubfraction = computed(
   () => props.faction.subfractions.find((sub) => sub.meta.id === currentId.value) ?? null,
@@ -187,88 +176,20 @@ function moveSubfraction(direction: -1 | 1) {
   }
 }
 
-function getSubfractionPreviewCandidates(subfractionId: string): RandomPreviewCandidate<string>[] {
-  const preview = subfractionPreviews.value[subfractionId]
-
-  return (
-    preview?.images.map((url) => ({
-      durationMs: preview.durationMs,
-      value: url,
-    })) ?? []
-  )
-}
-
-function createSubfractionPreviewTimer(subfractionId: string) {
-  return createRandomPreviewTimer({
-    getCandidates: () => getSubfractionPreviewCandidates(subfractionId),
-    onChange: async (url) => {
-      await decodeImageUrl(url)
-      setSubfractionPreviewUrl(subfractionId, url)
-    },
-  })
-}
-
-function startSubfractionPreviewTimers() {
-  stopSubfractionPreviewTimers()
-  subfractionPreviewTimers = Object.keys(subfractionPreviews.value).map((subfractionId) => {
-    const timer = createSubfractionPreviewTimer(subfractionId)
-    timer.start()
-    return timer
-  })
-}
-
-function stopSubfractionPreviewTimers() {
-  subfractionPreviewTimers.forEach((timer) => timer.stop())
-  subfractionPreviewTimers = []
-}
-
 function getSubfractionPreviewUrl(id: string): string {
-  return subfractionPreviewUrls.value[id] ?? ''
+  return subfractionPreview.getCurrentUrl(id)
 }
 
 function getPreviousSubfractionPreviewUrl(id: string): string {
-  return previousSubfractionPreviewUrls.value[id] ?? ''
+  return subfractionPreview.getPreviousUrl(id)
 }
 
 function getSubfractionPreviewStyle(id: string): Record<string, string> {
-  const url = getSubfractionPreviewUrl(id)
-
-  return url
-    ? {
-        '--subfraction-preview': `url("${url}")`,
-      }
-    : {}
+  return subfractionPreview.getStyle(id)
 }
 
 function getPreviewStyle(url: string): Record<string, string> {
   return url ? { '--subfraction-preview': `url("${url}")` } : {}
-}
-
-function setSubfractionPreviewUrl(subfractionId: string, url: string) {
-  const currentUrl = subfractionPreviewUrls.value[subfractionId]
-
-  if (currentUrl && currentUrl !== url) {
-    previousSubfractionPreviewUrls.value = {
-      ...previousSubfractionPreviewUrls.value,
-      [subfractionId]: currentUrl,
-    }
-
-    const timeout = window.setTimeout(() => {
-      clearPreviousSubfractionPreviewUrl(subfractionId)
-    }, 650)
-
-    subfractionPreviewAnimationTimeouts.push(timeout)
-  }
-
-  subfractionPreviewUrls.value = {
-    ...subfractionPreviewUrls.value,
-    [subfractionId]: url,
-  }
-}
-
-function stopSubfractionPreviewAnimations() {
-  subfractionPreviewAnimationTimeouts.forEach(window.clearTimeout)
-  subfractionPreviewAnimationTimeouts = []
 }
 
 function stopSwitcherResizeObserver() {
@@ -277,8 +198,6 @@ function stopSwitcherResizeObserver() {
 }
 
 async function loadSubfractionPreviews() {
-  stopSubfractionPreviewTimers()
-
   const entries = await Promise.all(
     props.faction.subfractions.map(async (subfraction) => {
       if (!subfraction.loadPreviewSource) {
@@ -297,8 +216,7 @@ async function loadSubfractionPreviews() {
     }),
   )
 
-  subfractionPreviews.value = Object.fromEntries(entries.filter((entry) => entry !== null))
-  startSubfractionPreviewTimers()
+  subfractionPreview.start(Object.fromEntries(entries.filter((entry) => entry !== null)))
 }
 
 watch(currentId, async (id) => {
@@ -319,12 +237,6 @@ watch(() => props.faction.id, loadSubfractionPreviews, { immediate: true })
 
 watch(() => props.faction.subfractions.length, updateSwitcherOverflow, { immediate: true })
 
-function clearPreviousSubfractionPreviewUrl(subfractionId: string) {
-  const nextPreviousUrls = { ...previousSubfractionPreviewUrls.value }
-  delete nextPreviousUrls[subfractionId]
-  previousSubfractionPreviewUrls.value = nextPreviousUrls
-}
-
 onMounted(() => {
   switcherResizeObserver = new ResizeObserver(() => {
     void updateSwitcherOverflow()
@@ -342,8 +254,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  stopSubfractionPreviewTimers()
-  stopSubfractionPreviewAnimations()
+  subfractionPreview.stop()
   stopSwitcherResizeObserver()
   window.cancelAnimationFrame(switcherSmoothFrame)
 })
@@ -351,6 +262,8 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="factionPage">
+    <h1 class="factionTitle">{{ faction.name }}</h1>
+
     <div
       v-if="faction.subfractions.length > 1"
       class="switcher"
@@ -430,6 +343,16 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.factionTitle {
+  margin: 1rem 0 0;
+  padding: 0 1rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: var(--color-text);
 }
 
 .switcher {
@@ -521,7 +444,7 @@ onBeforeUnmount(() => {
 }
 
 .switcher__buttonPreview--leaving {
-  animation: preview-slide-out 0.6s ease both;
+  animation: preview-slide-out 0.65s ease both;
 }
 
 .switcher__buttonText {

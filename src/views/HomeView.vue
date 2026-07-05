@@ -3,8 +3,8 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getRandomAudio } from '@/utils/getRandomAudio'
 import { debounce } from '@/utils/debounce'
 
-const NAV_VIDEO_FALLBACK_URL = '/landing.mp4'
-const NAV_IMAGE_FALLBACK_URL = '/mock.png'
+const NAV_VIDEO_FALLBACK_URL = '/pet2_final.mp4'
+const NAV_IMAGE_FALLBACK_URL = '/mock.webp'
 
 // показываем картинку, пока у видео не появился первый кадр (loadeddata)
 const isVideoReady = ref(false)
