@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import type { AudioContent, VoicePageId } from '@/core/models/audioContent'
 import type { Subfraction, SubfractionAudioSource } from '@/core/models/subfraction'
+import { useI18nStore } from '@/stores/i18n'
 import AgentPanel from '@/widgets/AgentPanel.vue'
 import * as AudioContentModule from '@/widgets/AudioContent.vue'
 import * as SoundpadContentModule from '@/widgets/SoundpadContent.vue'
@@ -9,6 +10,8 @@ import VoicePageSwitcher from '@/widgets/VoicePageSwitcher.vue'
 
 const AudioContentWidget = AudioContentModule.default
 const SoundpadContentWidget = SoundpadContentModule.default
+
+const i18nStore = useI18nStore()
 
 const props = defineProps<{
   subfraction: Subfraction
@@ -109,7 +112,9 @@ watch(
         </button>
       </div>
 
-      <p v-if="isAudioSourceLoading" class="voicePageLoading">Пожалуйста, подождите...</p>
+      <p v-if="isAudioSourceLoading" class="voicePageLoading">
+        {{ i18nStore.getMessage.common.pleaseWait }}
+      </p>
 
       <VoicePageSwitcher
         v-else-if="voicePages.length"
@@ -160,6 +165,7 @@ watch(
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .agentSidebar {

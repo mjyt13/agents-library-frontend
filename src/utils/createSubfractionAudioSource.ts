@@ -20,8 +20,6 @@ export const createAudioSourceFromFiles = (
   return {
     voicePages: pages.map((page) => ({
       id: page.id,
-      title: page.title,
-      description: page.description,
       groups: page.groups.map((group) => group.meta),
     })),
     loadVoicePage: async (pageId) => pages.find((page) => page.id === pageId)?.groups ?? [],
@@ -49,8 +47,6 @@ export const createAudioSourceFromModules = (
   return {
     voicePages: pages.map((page) => ({
       id: page.id,
-      title: page.title,
-      description: page.description,
       groups: page.groups.map((group) => group.meta),
     })),
     loadVoicePage: async (pageId) => pages.find((page) => page.id === pageId)?.groups ?? [],

@@ -2,6 +2,9 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getRandomAudio } from '@/utils/getRandomAudio'
 import { debounce } from '@/utils/debounce'
+import { useI18nStore } from '@/stores/i18n'
+
+const i18nStore = useI18nStore()
 
 const NAV_VIDEO_FALLBACK_URL = '/pet2_final.mp4'
 const NAV_IMAGE_FALLBACK_URL = '/mock.webp'
@@ -59,13 +62,12 @@ onBeforeUnmount(() => player.pause())
       <source :src="NAV_VIDEO_FALLBACK_URL" type="video/mp4" />
     </video>
     <section class="hero">
-      <p class="eyebrow">CS2 Agents Library</p>
-      <h1>Слушай голосовые линии по фракциям и подфракциям.</h1>
+      <p class="eyebrow">{{ i18nStore.getMessage.home.title }}</p>
+      <h1>{{ i18nStore.getMessage.home.description }}</h1>
       <p class="lead">
-        Сейчас библиотека собирается вокруг архитектуры фракций: можно открыть нужную сторону,
-        переключиться между подфракциями и послушать реплики конкретных агентов.
+        {{ i18nStore.getMessage.home.lead }}
       </p>
-      <button @click="playRandomAudio">Play Random Audio</button>
+      <button @click="playRandomAudio">{{ i18nStore.getMessage.home.randomAudioButton }}</button>
     </section>
   </main>
 </template>

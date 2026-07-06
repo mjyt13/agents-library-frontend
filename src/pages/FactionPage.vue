@@ -5,20 +5,27 @@ import { SubfractionType, SubfractionTypeRus } from '@/core/models/subfraction'
 import type { SubfractionType as SubfractionTypeValue } from '@/core/models/subfraction'
 import { useCrossfadePreview } from '@/composables/useCrossfadePreview'
 import SubfractionPage from '@/pages/SubfractionPage.vue'
+import { useI18nStore } from '@/stores/i18n'
 
 const props = defineProps<{
   faction: Faction
 }>()
 
-const subfractionLabels: Record<SubfractionTypeValue, string> = {
-  [SubfractionType.MALE]: SubfractionTypeRus.MALE,
-  [SubfractionType.FEMALE]: SubfractionTypeRus.FEMALE,
-  [SubfractionType.MASTER]: SubfractionTypeRus.MASTER,
-  [SubfractionType.MASTER_FEMALE]: SubfractionTypeRus.MASTER_FEMALE,
-  [SubfractionType.MASTER_MALE]: SubfractionTypeRus.MASTER_MALE,
-  [SubfractionType.MASTER_FBI]: SubfractionTypeRus.MASTER_FBI,
-  [SubfractionType.MASTER_SWAT]: SubfractionTypeRus.MASTER_SWAT,
-}
+const i18nStore = useI18nStore()
+
+const subfractionLabels = computed<Record<SubfractionTypeValue, string>>(() => {
+  const source = i18nStore.locale === 'ru' ? SubfractionTypeRus : SubfractionType
+
+  return {
+    [SubfractionType.MALE]: source.MALE,
+    [SubfractionType.FEMALE]: source.FEMALE,
+    [SubfractionType.MASTER]: source.MASTER,
+    [SubfractionType.MASTER_FEMALE]: source.MASTER_FEMALE,
+    [SubfractionType.MASTER_MALE]: source.MASTER_MALE,
+    [SubfractionType.MASTER_FBI]: source.MASTER_FBI,
+    [SubfractionType.MASTER_SWAT]: source.MASTER_SWAT,
+  }
+})
 
 const currentId = ref(props.faction.subfractions[0]?.meta.id ?? '')
 const switcherViewport = ref<HTMLElement | null>(null)

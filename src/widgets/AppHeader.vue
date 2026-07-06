@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import type { Faction } from '@/core/models/faction'
 import { useCrossfadePreview, type CrossfadePreviewSource } from '@/composables/useCrossfadePreview'
+import type { NavGroupId } from '@/i18n/messages'
 import { useI18nStore } from '@/stores/i18n'
 import { anarchist } from '@/interface/data/factions/anarchist/anarchist'
 import { fbi_old } from '@/interface/data/factions/fbi_old/fbi_old'
@@ -30,9 +31,7 @@ interface NavItem {
 }
 
 interface NavGroup {
-  id: string
-  label: string
-  description: string
+  id: NavGroupId
   items: NavItem[]
 }
 
@@ -46,8 +45,6 @@ const NAV_PREVIEW_FALLBACK_URL = '/mock.webp'
 const navGroups: NavGroup[] = [
   {
     id: 'terrorists',
-    label: 'T-side',
-    description: 'Terrorist factions',
     items: [
       {
         to: '/professionals',
@@ -93,8 +90,6 @@ const navGroups: NavGroup[] = [
   },
   {
     id: 'counterTerrorists',
-    label: 'CT-side',
-    description: 'Counter-terrorist factions',
     items: [
       {
         to: '/swat-fbi',
@@ -332,10 +327,10 @@ watch(
     </button>
 
     <RouterLink class="brand" to="/">
-      <img alt="CS2 Agents Library" class="logo" src="@/assets/logo.png" width="72" height="72" />
+      <img alt="CS Radio Library" class="logo" src="@/assets/logo.png" width="72" height="72" />
       <div class="brandText">
-        <strong>CS2 Agents Library</strong>
-        <span>Фракции, подфракции и голосовые линии агентов</span>
+        <strong>CS Radio Library</strong>
+        <span>{{ i18nStore.getMessage.header.tagline }}</span>
       </div>
     </RouterLink>
 
@@ -370,8 +365,8 @@ watch(
             aria-hidden="true"
           ></span>
           <span class="navDropdownButtonText">
-            <strong>{{ group.label }}</strong>
-            <small>{{ group.description }}</small>
+            <strong>{{ i18nStore.getMessage.header.navGroups[group.id].label }}</strong>
+            <small>{{ i18nStore.getMessage.header.navGroups[group.id].description }}</small>
           </span>
         </button>
 

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { AudioContent, AudioItem } from '@/core/models/audioContent'
+import { useI18nStore } from '@/stores/i18n'
 
 const props = defineProps<{
   audioContent: AudioContent[]
 }>()
+
+const i18nStore = useI18nStore()
 
 const openSections = ref<Record<string, boolean>>({})
 const loadingSections = ref<Record<string, boolean>>({})
@@ -67,7 +70,9 @@ watch(() => props.audioContent, resetSections)
         @click="toggleSection(audioGroup)"
       >
         <h3>{{ audioGroup.meta.name }}</h3>
-        <span v-if="audioGroup.meta.isMissing" class="missingBadge">Нет</span>
+        <span v-if="audioGroup.meta.isMissing" class="missingBadge">{{
+          i18nStore.getMessage.common.no
+        }}</span>
         <span v-else class="toggleMeta">
           <span class="itemCount">{{
             audioGroup.meta.itemCount ?? audioGroup.audioItems.length
@@ -80,7 +85,7 @@ watch(() => props.audioContent, resetSections)
 
       <div v-if="isSectionOpen(audioGroup.meta.id)" class="audioSectionContent open">
         <div v-if="isSectionLoading(audioGroup.meta.id)" class="audioSectionLoading">
-          Загружаю голосовые линии...
+          {{ i18nStore.getMessage.audio.loadingVoiceLines }}
         </div>
 
         <div

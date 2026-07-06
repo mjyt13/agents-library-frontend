@@ -17,8 +17,6 @@ export interface AudioGroupMeta {
 
 export interface VoicePageMeta {
   id: VoicePageId
-  title: string
-  description: string
   groups: AudioGroupMeta[]
 }
 

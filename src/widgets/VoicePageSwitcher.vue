@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { VoicePageId, VoicePageMeta } from '@/core/models/audioContent'
+import { useI18nStore } from '@/stores/i18n'
+
+const i18nStore = useI18nStore()
 
 defineProps<{
   voicePages: VoicePageMeta[]
@@ -22,15 +25,17 @@ const emit = defineEmits<{
         :class="page.id === currentVoicePageId ? 'active' : ''"
         @click="emit('update:currentVoicePageId', page.id)"
       >
-        {{ page.title }}
+        {{ i18nStore.getMessage.voicePages[page.id].title }}
         <span class="voicePageMeta">
           {{ `${page.groups.filter((group) => !group.isMissing).length}/${page.groups.length}` }}
         </span>
       </button>
     </div>
 
-    <p v-if="currentVoicePage" class="voicePageDescription">{{ currentVoicePage.description }}</p>
-    <p v-if="isLoading" class="voicePageLoading">Подождите...</p>
+    <p v-if="currentVoicePage" class="voicePageDescription">
+      {{ i18nStore.getMessage.voicePages[currentVoicePage.id].description }}
+    </p>
+    <p v-if="isLoading" class="voicePageLoading">{{ i18nStore.getMessage.common.pleaseWait }}</p>
 
     <slot v-else></slot>
   </div>

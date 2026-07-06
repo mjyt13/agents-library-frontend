@@ -3,8 +3,6 @@ import { voiceCategory, type VoiceCategoryId } from '@/utils/voiceCategories'
 
 export interface VoicePage {
   id: VoicePageId
-  title: string
-  description: string
   groups: AudioContent[]
 }
 
@@ -354,20 +352,14 @@ export const buildVoicePages = (audioGroups: AudioContent[]): VoicePage[] => {
   return [
     {
       id: 1,
-      title: 'Страница 1',
-      description: 'Наиболее известные голоcовые линии.',
       groups: createPageGroups(pageOneCategories, groupedByCategory),
     },
     {
       id: 2,
-      title: 'Страница 2',
-      description: 'Менее известные, но важные события группы.',
       groups: createPageGroups(pageTwoCategories, groupedByCategory),
     },
     {
       id: 3,
-      title: 'Страница 3',
-      description: 'Ситуативные линии',
       groups: createPageGroups(pageThreeCategories, groupedByCategory),
     },
   ]

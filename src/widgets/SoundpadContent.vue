@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AudioContent, AudioItem } from '@/core/models/audioContent'
+import { useI18nStore } from '@/stores/i18n'
+
+const i18nStore = useI18nStore()
 
 const props = withDefaults(
   defineProps<{
@@ -182,7 +185,7 @@ const resolveGroup = async (audioGroup: AudioContent): Promise<void> => {
     })
     .then(() => undefined)
     .catch(() => {
-      state.error = 'Не удалось загрузить линии'
+      state.error = i18nStore.getMessage.audio.failedToLoadLines
     })
     .finally(() => {
       state.isLoading = false
@@ -202,7 +205,7 @@ const warmRandomPlayableItem = async (audioGroup: AudioContent): Promise<AudioIt
   try {
     return await resolveRandomItem(audioGroup, state)
   } catch {
-    state.error = 'Не удалось загрузить линию'
+    state.error = i18nStore.getMessage.audio.failedToLoadLine
     return null
   } finally {
     state.isLoading = false
@@ -249,7 +252,7 @@ const playGroup = async (audioGroup: AudioContent): Promise<void> => {
     await activePlayer.play()
     state.heardIds.add(item.id)
   } catch {
-    state.error = 'Браузер не дал запустить звук'
+    state.error = i18nStore.getMessage.audio.browserBlockedAudio
   } finally {
     state.isPlaying = false
   }
