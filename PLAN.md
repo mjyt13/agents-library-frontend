@@ -132,12 +132,44 @@ CSS `columns` даёт независимые колонки по высоте, 
 
 ## Android
 
-Android-приложение пока только будущая идея.
+Capacitor подключён, сборка debug/release APK работает локально без Android Studio.
 
-- Возможный путь: Capacitor.
-- Аудиофайлы будут бандлиться в приложение, размер APK может быть большим.
-- OGG уже лучше для размера, чем WAV.
-- Перед Android нужно отдельно посмотреть итоговый размер `dist` и поведение аудио в WebView.
+- Toolchain (JDK 21 + Android SDK) вынесен из `~` на SD-карту (`/run/media/deck/EE4S8/android-toolchain/`) — экономия ~950 MB на системном SSD. Пути прописаны в `~/.bashrc`/`~/.zshrc` и `android/local.properties` (гитигнорится).
+- Release-сборка подписывается локальным self-signed keystore (`android-toolchain/keystore/release.keystore`, путь/пароли — только в `local.properties`, в git не попадает). Годится для sideload, не для Play Store.
+- `npm run android:sync` (build + `cap sync android`), затем `./gradlew assembleDebug` / `assembleRelease` в `android/`.
+- Без ADB/USB APK можно передать на телефon/планшет через `python3 -m http.server` в папке с APK и скачать по LAN в браузере устройства.
+- Итоговый APK — **~338 MB**, почти целиком это забандленные голосовые линии (см. ниже), не картинки.
+
+### Размер APK — разбивка
+
+Проверено (`du` по `src/interface/data`):
+
+- **Аудио (ogg/oga/wav): ~379 MB, 10 959 файлов.** Это доминирующая часть размера — уже сжатый OGG, дальше сжимать особо некуда без потери качества/деталей реплик.
+- Картинки (webp/png/jpg): **~11 MB, 160 файлов** — не проблема, WebP-пайплайн уже отработал.
+- Найден мёртвый груз: `factions/professionals/master/audio_wav/` — **55 MB** несжатых WAV, закоммичены в git, не подключены ни в один `audio.ts` (не участвуют в `import.meta.glob`). Кандидат на удаление.
+- OGG/OGA уже лучше WAV по размеру; дальнейшее сокращение — это либо понижение битрейта голосовых линий, либо переход на Opus, либо ленивая догрузка аудио вместо бандлинга в APK (актуально, если 338 MB станет проблемой для установки/обновлений).
+
+## UX и безопасность — аудит (2026-07-23)
+
+Прогон агента по `src/pages`, `src/widgets`, `src/router`, `capacitor.config.ts`, `AndroidManifest.xml`, `npm audit`, `scripts/*.mjs`.
+
+### Стоит исправить
+
+1. **Нет error/retry состояния у асинхронных лоадеров.** [SubfractionPage.vue](src/pages/SubfractionPage.vue) и [FactionPage.vue](src/pages/FactionPage.vue) вызывают `loadAudioSource()`/`loadPreviewSource()` без `try/catch` вокруг. Если промис зареджектится — страница зависает в "loading" навсегда, без возможности повторить.
+2. **Нет catch-all/404 роута.** В [router/index.ts](src/router/index.ts) нет `:pathMatch(.*)*`. Битая/устаревшая ссылка или deep link с Android даёт пустой `<router-view>` — тупик без выхода, кроме логотипа в хедере.
+3. **Одновременное проигрывание нескольких реплик в дропдаунах.** [AudioContent.vue](src/widgets/AudioContent.vue) рендерит по нативному `<audio controls>` на реплику без координации между ними — можно запустить несколько параллельно, они наложатся друг на друга. В [SoundpadContent.vue](src/widgets/SoundpadContent.vue) уже сделано правильно: один переиспользуемый `Audio()`, пауза/сброс перед переключением. Стоит перенести этот паттерн в `AudioContent.vue`.
+4. **Нет обработки аппаратной кнопки "Назад" на Android.** В `package.json` нет `@capacitor/app`, соответственно нет `App.addListener('backButton', …)`. В Capacitor WebView без перехвата back either выходит из приложения с любой страницы, либо расходится с историей Vue Router.
+5. **Дропдаун в хедере не закрывается по Escape и не управляет фокусом.** [AppHeader.vue](src/widgets/AppHeader.vue) открывает меню только по клику; нет `keydown.esc`, фокус не уводится при открытии/закрытии — неудобно для клавиатурной навигации.
+
+### Проверено, проблем нет
+
+- Нет `v-html`/`innerHTML`/`eval`/`Function()` нигде в `src/` (grep по всему дереву) — инъекций через шаблоны нет в принципе.
+- Нет ни одного текстового инпута/формы в проекте — большинство классов XSS/инъекций неприменимы просто потому, что нет поверхности для пользовательского ввода.
+- Резолюция аудио-URL (`createSubfractionAudioSource.ts`) — ключи `audioModules` целиком статические, из `import.meta.glob`, резолвятся на этапе сборки; это закрытый словарь, а не динамическая склейка пути, path traversal невозможен даже теоретически.
+- `npm audit` — 0 уязвимостей.
+- `capacitor.config.ts`: `allowMixedContent: false`, cleartext-трафика нет. `AndroidManifest.xml`: `MainActivity` экспортирован (обязательно для launcher-активности), `FileProvider` корректно `exported=false`. Единственное разрешение — `INTERNET`, теоретически можно убрать (весь контент бандлится офлайн), но угрозы не несёт.
+- `scripts/scrape-agents.mjs` дергает внешний сайт и пишет через `JSON.stringify` (без риска инъекции кода), но это ручной dev-скрипт, не встроен в CI/сборку — риск чисто теоретический.
+- `scripts/compress-images.mjs` работает только с локальными файлами через `sharp`/`fs`, без shell-вызовов и сети — рисков нет.
 
 ## Небольшие оптимизационные хвосты
 

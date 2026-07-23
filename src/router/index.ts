@@ -99,6 +99,11 @@ const router = createRouter({
       name: 'crop-inspector',
       component: () => import('@/views/CropInspectorView.vue'),
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+    },
   ],
 })
 

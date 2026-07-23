@@ -23,7 +23,13 @@ const audioSource = ref<SubfractionAudioSource | null>(null)
 const currentAudioGroups = ref<AudioContent[]>([])
 const isAudioSourceLoading = ref(false)
 const isVoicePageLoading = ref(false)
+const audioSourceError = ref(false)
+const voicePageError = ref(false)
 const audioMode = ref<'soundpad' | 'dropdown'>('soundpad')
+const reloadToken = ref(0)
+const retry = () => {
+  reloadToken.value++
+}
 
 const audioSourceCache = new Map<string, SubfractionAudioSource>()
 const pageCache = new Map<string, AudioContent[]>()
@@ -40,8 +46,8 @@ const currentVoicePage = computed(
 )
 
 watch(
-  subfractionId,
-  async (id, _previousId, onCleanup) => {
+  [subfractionId, reloadToken],
+  async ([id], _previous, onCleanup) => {
     let cancelled = false
     onCleanup(() => {
       cancelled = true
@@ -51,6 +57,7 @@ watch(
     currentAudioGroups.value = []
     isVoicePageLoading.value = false
     isAudioSourceLoading.value = true
+    audioSourceError.value = false
 
     try {
       const cached = audioSourceCache.get(id)
@@ -60,6 +67,8 @@ watch(
       audioSourceCache.set(id, loadedAudioSource)
       audioSource.value = loadedAudioSource
       currentVoicePageId.value = loadedAudioSource.voicePages[0]?.id ?? 1
+    } catch {
+      if (!cancelled) audioSourceError.value = true
     } finally {
       if (!cancelled) isAudioSourceLoading.value = false
     }
@@ -68,7 +77,7 @@ watch(
 )
 
 watch(
-  [subfractionId, currentVoicePageId, audioSource],
+  [subfractionId, currentVoicePageId, audioSource, reloadToken],
   async ([id, pageId, source], _previous, onCleanup) => {
     if (!source) return
 
@@ -82,16 +91,20 @@ watch(
     if (cached) {
       currentAudioGroups.value = cached
       isVoicePageLoading.value = false
+      voicePageError.value = false
       return
     }
 
     isVoicePageLoading.value = true
+    voicePageError.value = false
 
     try {
       const loadedGroups = await source.loadVoicePage(pageId)
       if (cancelled) return
       pageCache.set(cacheKey, loadedGroups)
       currentAudioGroups.value = loadedGroups
+    } catch {
+      if (!cancelled) voicePageError.value = true
     } finally {
       if (!cancelled) isVoicePageLoading.value = false
     }
@@ -116,6 +129,11 @@ watch(
         {{ i18nStore.getMessage.common.pleaseWait }}
       </p>
 
+      <div v-else-if="audioSourceError" class="loadError">
+        <p>{{ i18nStore.getMessage.audio.failedToLoadLines }}</p>
+        <button type="button" @click="retry">{{ i18nStore.getMessage.common.retry }}</button>
+      </div>
+
       <VoicePageSwitcher
         v-else-if="voicePages.length"
         v-model:current-voice-page-id="currentVoicePageId"
@@ -123,8 +141,13 @@ watch(
         :current-voice-page="currentVoicePage"
         :is-loading="isVoicePageLoading"
       >
+        <div v-if="voicePageError" class="loadError">
+          <p>{{ i18nStore.getMessage.audio.failedToLoadLines }}</p>
+          <button type="button" @click="retry">{{ i18nStore.getMessage.common.retry }}</button>
+        </div>
+
         <SoundpadContentWidget
-          v-if="audioMode === 'soundpad' && currentAudioGroups.length"
+          v-else-if="audioMode === 'soundpad' && currentAudioGroups.length"
           :key="`soundpad:${subfractionId}:${currentVoicePageId}`"
           :audio-content="currentAudioGroups"
         />
@@ -203,6 +226,27 @@ watch(
   margin: 1rem 0 0;
   color: #666;
   line-height: 1.5;
+}
+
+.loadError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 1rem 0 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.loadError button {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  cursor: pointer;
 }
 
 @media (max-width: 1024px) {

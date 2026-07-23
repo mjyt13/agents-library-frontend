@@ -7,7 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({command})=>({
   plugins: [
     vue(),
     vueJsx(),
@@ -19,6 +19,14 @@ export default defineConfig({
       jpeg: { quality: 80 },
       jpg: { quality: 80 },
     }),
+    command === 'build' && {
+      name: 'dev-routes',
+      resolveId(source){
+        if (source.includes('/src/views/CropInspectorView.vue')){
+          return false;
+        }
+      }
+    },
   ],
   assetsInclude: ['**/*.oga'],
   resolve: {
@@ -29,4 +37,5 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
   },
-})
+}
+))

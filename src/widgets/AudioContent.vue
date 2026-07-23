@@ -9,6 +9,15 @@ const props = defineProps<{
 
 const i18nStore = useI18nStore()
 
+const rootEl = ref<HTMLElement | null>(null)
+
+const pauseOtherPlayers = (event: Event) => {
+  const startedPlayer = event.target as HTMLAudioElement
+  rootEl.value?.querySelectorAll('audio').forEach((audio) => {
+    if (audio !== startedPlayer && !audio.paused) audio.pause()
+  })
+}
+
 const openSections = ref<Record<string, boolean>>({})
 const loadingSections = ref<Record<string, boolean>>({})
 const resolvedItems = ref<Record<string, AudioItem[]>>({})
@@ -60,7 +69,7 @@ watch(() => props.audioContent, resetSections)
 </script>
 
 <template>
-  <div class="audioContent">
+  <div ref="rootEl" class="audioContent" @play.capture="pauseOtherPlayers">
     <div v-for="audioGroup in props.audioContent" :key="audioGroup.meta.id" class="audioItems">
       <button
         class="audioSectionHeader"

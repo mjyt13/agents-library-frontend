@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, type ComponentPublicInstance } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import type { Faction } from '@/core/models/faction'
 import { useCrossfadePreview, type CrossfadePreviewSource } from '@/composables/useCrossfadePreview'
@@ -141,6 +141,21 @@ const navGroups: NavGroup[] = [
 ]
 
 const openGroupId = ref<string | null>(null)
+const groupButtonEls = new Map<string, HTMLButtonElement>()
+
+function setGroupButtonRef(id: string, el: Element | ComponentPublicInstance | null) {
+  if (el instanceof HTMLButtonElement) {
+    groupButtonEls.set(id, el)
+  } else {
+    groupButtonEls.delete(id)
+  }
+}
+
+function closeGroup(id: string, focusButton = false) {
+  if (openGroupId.value !== id) return
+  openGroupId.value = null
+  if (focusButton) groupButtonEls.get(id)?.focus()
+}
 const isHeaderCompact = ref(false)
 const groupButtonPreview = useCrossfadePreview('--nav-preview', NAV_PREVIEW_FALLBACK_URL)
 const navPreviews = ref<Record<string, CrossfadePreviewSource>>({})
@@ -341,8 +356,16 @@ watch(
         class="navDropdown"
         @mouseenter="preloadGroupNavImages(group)"
         @focusin="preloadGroupNavImages(group)"
+        @keydown.esc="closeGroup(group.id, true)"
+        @focusout="
+          (event) => {
+            if (!(event.currentTarget as HTMLElement)?.contains(event.relatedTarget as Node))
+              closeGroup(group.id)
+          }
+        "
       >
         <button
+          :ref="(el) => setGroupButtonRef(group.id, el)"
           class="navDropdownButton"
           :class="[isGroupActive(group) ? 'active' : '', openGroupId === group.id ? 'open' : '']"
           :style="getPreviewStyle(getGroupPreviewUrl(group))"

@@ -9,6 +9,9 @@ type Message = {
   common: {
     pleaseWait: string
     no: string
+    retry: string
+    pageNotFound: string
+    backHome: string
   }
   audio: {
     loadingVoiceLines: string
@@ -36,6 +39,9 @@ const rus: Message = {
   common: {
     pleaseWait: 'Пожалуйста, подождите...',
     no: 'Нет',
+    retry: 'Повторить',
+    pageNotFound: 'Страница не найдена',
+    backHome: 'На главную',
   },
   audio: {
     loadingVoiceLines: 'Загружаю голосовые линии...',
@@ -67,6 +73,9 @@ const eng: Message = {
   common: {
     pleaseWait: 'Please wait...',
     no: 'None',
+    retry: 'Retry',
+    pageNotFound: 'Page not found',
+    backHome: 'Back to home',
   },
   audio: {
     loadingVoiceLines: 'Loading voice lines...',

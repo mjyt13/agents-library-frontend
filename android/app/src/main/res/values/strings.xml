@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CS Radio Library</string>
+    <string name="title_activity_main">CS Radio Library</string>
+    <string name="package_name">com.csradio.library</string>
+    <string name="custom_url_scheme">com.csradio.library</string>
+</resources>

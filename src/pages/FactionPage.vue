@@ -211,15 +211,20 @@ async function loadSubfractionPreviews() {
         return null
       }
 
-      const previewSource = await subfraction.loadPreviewSource()
+      try {
+        const previewSource = await subfraction.loadPreviewSource()
 
-      return [
-        subfraction.meta.id,
-        {
-          durationMs: previewSource.durationMs,
-          images: await previewSource.loadImages(),
-        },
-      ] as const
+        return [
+          subfraction.meta.id,
+          {
+            durationMs: previewSource.durationMs,
+            images: await previewSource.loadImages(),
+          },
+        ] as const
+      } catch {
+        // One subfraction's broken preview shouldn't blank out the others.
+        return null
+      }
     }),
   )
 
