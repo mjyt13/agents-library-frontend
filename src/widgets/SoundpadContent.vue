@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import type { AudioContent, AudioItem } from '@/core/models/audioContent'
+import type { AudioContent, AudioItem, GroupState } from '@/core/models/audioContent'
 import { useI18nStore } from '@/stores/i18n'
 
 const i18nStore = useI18nStore()
@@ -9,7 +9,8 @@ const props = withDefaults(
   defineProps<{
     audioContent: AudioContent[]
     cooldownMs?: number
-    preloadConcurrency?: number
+    preloadConcurrency?: number,
+    groupStates: Record<string, GroupState>
   }>(),
   {
     cooldownMs: 450,
@@ -17,21 +18,10 @@ const props = withDefaults(
   },
 )
 
-interface GroupState {
-  items: AudioItem[]
-  heardIds: Set<string>
-  isLoading: boolean
-  isPlaying: boolean
-  error: string
-  lastPlayedAt: number
-  resolvedIndexes: Set<number>
-  pendingIndexes: Set<number>
-  pendingItemPromises: Set<Promise<AudioItem | null>>
-  isFullyResolved: boolean
-  resolvePromise: Promise<void> | null
-}
+const emit = defineEmits<
+  { 'update:groupStates': [value: Record<string,GroupState>] }
+>()
 
-const groupStates = ref<Record<string, GroupState>>({})
 const visibleGroupIds = ref(new Set<string>())
 const groupElements = new Map<string, HTMLElement>()
 
@@ -63,8 +53,12 @@ const createGroupState = (): GroupState => ({
 })
 
 const ensureGroupState = (sectionId: string): GroupState => {
-  groupStates.value[sectionId] ??= createGroupState()
-  return groupStates.value[sectionId]
+  const existing = props.groupStates[sectionId]
+  if (existing) return existing
+
+  const state = createGroupState()
+  emit('update:groupStates', { ...props.groupStates, [sectionId]: state })
+  return state
 }
 
 const getGroupState = (audioGroup: AudioContent): GroupState =>
@@ -319,7 +313,6 @@ const setupObserver = async (): Promise<void> => {
 watch(
   () => props.audioContent,
   () => {
-    groupStates.value = {}
     void setupObserver()
   },
   { immediate: true },

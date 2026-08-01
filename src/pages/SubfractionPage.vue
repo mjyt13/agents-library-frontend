@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { AudioContent, VoicePageId } from '@/core/models/audioContent'
+import type { AudioContent, VoicePageId, GroupState } from '@/core/models/audioContent'
 import type { Subfraction, SubfractionAudioSource } from '@/core/models/subfraction'
 import { useI18nStore } from '@/stores/i18n'
 import AgentPanel from '@/widgets/AgentPanel.vue'
@@ -30,6 +30,7 @@ const reloadToken = ref(0)
 const retry = () => {
   reloadToken.value++
 }
+const groupStates = ref<Record<string, GroupState>>({})
 
 const audioSourceCache = new Map<string, SubfractionAudioSource>()
 const pageCache = new Map<string, AudioContent[]>()
@@ -58,6 +59,7 @@ watch(
     isVoicePageLoading.value = false
     isAudioSourceLoading.value = true
     audioSourceError.value = false
+    groupStates.value = {}
 
     try {
       const cached = audioSourceCache.get(id)
@@ -150,6 +152,7 @@ watch(
           v-else-if="audioMode === 'soundpad' && currentAudioGroups.length"
           :key="`soundpad:${subfractionId}:${currentVoicePageId}`"
           :audio-content="currentAudioGroups"
+          v-model:group-states="groupStates"
         />
 
         <AudioContentWidget

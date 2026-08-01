@@ -15,6 +15,20 @@ export interface AudioGroupMeta {
   itemCount?: number
 }
 
+export interface GroupState {
+  items: AudioItem[]
+  heardIds: Set<string>
+  isLoading: boolean
+  isPlaying: boolean
+  error: string
+  lastPlayedAt: number
+  resolvedIndexes: Set<number>
+  pendingIndexes: Set<number>
+  pendingItemPromises: Set<Promise<AudioItem | null>>
+  isFullyResolved: boolean
+  resolvePromise: Promise<void> | null
+}
+
 export interface VoicePageMeta {
   id: VoicePageId
   groups: AudioGroupMeta[]
