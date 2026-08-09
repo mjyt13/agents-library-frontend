@@ -5,6 +5,7 @@ import type { Faction } from '@/core/models/faction'
 import { useCrossfadePreview, type CrossfadePreviewSource } from '@/composables/useCrossfadePreview'
 import type { NavGroupId } from '@/i18n/messages'
 import { useI18nStore } from '@/stores/i18n'
+import { useBgMusicStore } from '@/stores/bgMusic'
 import { anarchist } from '@/interface/data/factions/anarchist/anarchist'
 import { fbi_old } from '@/interface/data/factions/fbi_old/fbi_old'
 import { fbi_swat } from '@/interface/data/factions/fbi_swat/fbi_swat'
@@ -38,6 +39,8 @@ interface NavGroup {
 const i18nStore = useI18nStore()
 const ENG_FLAG = '/eng.png'
 const RUS_FLAG = '/rus.png'
+
+const bgMusicStore = useBgMusicStore()
 
 const route = useRoute()
 const NAV_PREVIEW_FALLBACK_URL = '/mock.webp'
@@ -340,12 +343,14 @@ watch(
       />
       <span>{{ i18nStore.locale }}</span>
     </button>
+    <button @click="bgMusicStore.isPlaying ? bgMusicStore.pause() : bgMusicStore.play()" class="localeSwitcher" type="button">
+      {{ bgMusicStore.isPlaying ? 'Pause' : 'Play' }}
+    </button>
 
     <RouterLink class="brand" to="/">
       <img alt="CS Radio Library" class="logo" src="@/assets/logo.png" width="72" height="72" />
       <div class="brandText">
         <strong>CS Radio Library</strong>
-        <span>{{ i18nStore.getMessage.header.tagline }}</span>
       </div>
     </RouterLink>
 
@@ -419,22 +424,28 @@ watch(
 
 <style scoped>
 .appHeader {
-  --header-padding-block: 0.75rem;
-  --header-padding-inline: 0.75rem;
-  --brand-padding-block: 0.75rem;
-  --brand-column-width: minmax(260px, 320px);
-  --logo-size: 48px;
-  --nav-dropdown-width: clamp(11rem, 24vw, 13rem);
+  --header-padding-block: clamp(0.5rem, 1vw, 1rem);
+  --header-padding-inline: clamp(0.75rem, 2.2vw, 2rem);
+  --header-gap: clamp(0.75rem, 1.6vw, 1.5rem);
+
+  --brand-gap: clamp(0.6rem, 1.2vw, 1rem);
+  --brand-column-width: clamp(13rem, 25vw, 24rem);
+  --brand-title-size: clamp(1.05rem, 1.7vw, 1.5rem);
+  --brand-tagline-size: clamp(0.8rem, 1.05vw, 1rem);
+  --logo-size: clamp(42px, 5vw, 72px);
+
+  --nav-dropdown-width: clamp(9rem, 31vw, 28rem);
   --nav-dropdown-ratio: 3.75;
-  --nav-dropdown-text-scale: 0.92;
+  --nav-title-size: clamp(1rem, 1.6vw, 1.35rem);
+  --nav-desc-size: clamp(0.78rem, 1.05vw, 0.95rem);
 
   position: sticky;
   top: 0;
   z-index: 100;
   background: #fff;
   display: grid;
-  grid-template-columns: var(--brand-column-width) 1fr;
-  gap: 0.75rem;
+  grid-template-columns: var(--brand-column-width) minmax(0, 1fr);
+  gap: var(--header-gap);
   padding: var(--header-padding-block) var(--header-padding-inline);
   line-height: 1.5;
   border-bottom: 1px solid #e5e5e5;
@@ -445,14 +456,24 @@ watch(
 }
 
 .appHeaderCompact {
-  --header-padding-block: 0.45rem;
-  --brand-padding-block: 0.25rem;
-  --brand-column-width: minmax(220px, 0.8fr);
-  --logo-size: 40px;
-  --nav-dropdown-width: clamp(8rem, 36vw, 11.5rem);
-  --nav-dropdown-text-scale: 0.82;
+  --header-padding-block: clamp(0.35rem, 0.6vw, 0.55rem);
+
+  --brand-column-width: clamp(11rem, 20vw, 19rem);
+  --brand-title-size: clamp(0.95rem, 1.35vw, 1.2rem);
+  --brand-tagline-size: clamp(0.72rem, 0.9vw, 0.85rem);
+  --logo-size: clamp(34px, 3.6vw, 52px);
+
+  --nav-dropdown-width: clamp(10.5rem, 23vw, 23rem);
+  --nav-title-size: clamp(0.9rem, 1.3vw, 1.15rem);
+  --nav-desc-size: clamp(0.72rem, 0.9vw, 0.85rem);
 
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.switchers{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;  
 }
 
 .localeSwitcher {
@@ -492,13 +513,10 @@ watch(
   display: flex;
   align-items: center;
   min-width: 0;
-  padding: var(--brand-padding-block) 0;
-  gap: 1rem;
+  gap: var(--brand-gap);
   color: inherit;
   text-decoration: none;
-  transition:
-    padding 0.24s ease,
-    gap 0.24s ease;
+  transition: gap 0.24s ease;
 }
 
 .brandText {
@@ -508,26 +526,14 @@ watch(
 }
 
 .brandText strong {
-  font-size: 1.25rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.brandText strong {
+  font-size: var(--brand-title-size);
   line-height: 1.2;
-}
-
-.brandText span {
-  color: #666;
-  font-size: 0.95rem;
-  line-height: 1.35;
-}
-
-.appHeaderCompact .brand {
-  gap: 0.65rem;
-}
-
-.appHeaderCompact .brandText strong {
-  font-size: 1rem;
-}
-
-.appHeaderCompact .brandText span {
-  font-size: 0.78rem;
 }
 
 .mainNav {
@@ -538,7 +544,6 @@ watch(
   gap: 0.75rem;
 }
 
-.homeLink,
 .navDropdownButton {
   border: 1px solid #d2d2d2;
   border-radius: 5px;
@@ -552,21 +557,12 @@ watch(
     transform 0.15s ease;
 }
 
-.homeLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem 1rem;
-}
-
-.homeLink.router-link-exact-active,
 .navDropdownButton.active {
   color: #fff;
   border-color: #222;
   background: #222;
 }
 
-.homeLink:hover,
 .navDropdownButton:hover,
 .navDropdownButton.open {
   border-color: #999;
@@ -616,7 +612,9 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  max-width: 100%;
   text-align: center;
+  white-space: nowrap;
   color: #fff;
   text-shadow:
     0 1px 1px #000,
@@ -645,14 +643,21 @@ watch(
     var(--nav-preview, none) 40% 15% / cover no-repeat;
 }
 
+.navDropdownButtonText strong,
+.navDropdownButtonText small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .navDropdownButtonText strong {
-  font-size: calc(1.1rem * var(--nav-dropdown-text-scale));
+  font-size: var(--nav-title-size);
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
 .navDropdownButtonText small {
-  font-size: calc(0.82rem * var(--nav-dropdown-text-scale));
+  font-size: var(--nav-desc-size);
   opacity: 0.86;
 }
 
@@ -720,7 +725,7 @@ watch(
   z-index: 1;
   padding: 0.25rem 0.5rem;
   color: #fff;
-  font-size: 1rem;
+  font-size: var(--nav-title-size);
   font-weight: 800;
   letter-spacing: 0.02em;
   text-align: center;
@@ -757,73 +762,38 @@ watch(
 
 @media (min-width: 1024px) {
   .appHeader {
-    --header-padding-block: 1rem;
-    --header-padding-inline: 2rem;
-    --brand-padding-block: 0;
-    --brand-column-width: minmax(320px, 360px);
-    --logo-size: 72px;
-    --nav-dropdown-width: clamp(22rem, 30vw, 30rem);
-    --nav-dropdown-text-scale: 1;
+    --brand-column-width: clamp(19rem, 25vw, 24rem);
 
     align-items: center;
   }
 
   .appHeaderCompact {
-    --header-padding-block: 0.55rem;
-    --brand-column-width: minmax(240px, 300px);
-    --logo-size: 48px;
-    --nav-dropdown-width: clamp(17rem, 24vw, 23rem);
-    --nav-dropdown-text-scale: 0.86;
-  }
-
-  .mainNav {
-    justify-content: center;
+    --brand-column-width: clamp(16rem, 21vw, 20rem);
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 690px) {
   .appHeader {
-    --brand-column-width: minmax(320px, 1fr);
-    --logo-size: 42px;
+    --brand-column-width: minmax(0, 0.7fr);
     --nav-dropdown-width: 100%;
-    --nav-dropdown-ratio: 5;
-    --nav-dropdown-text-scale: 0.9;
+    --nav-dropdown-ratio: 5.5;
 
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .appHeaderCompact {
+    --nav-dropdown-ratio: 7;
   }
 
   .mainNav {
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
-    overflow-x: visible;
-  }
-
-  .appHeaderCompact {
-    --brand-column-width: minmax(220px, 1fr);
-    --logo-size: 36px;
-    --nav-dropdown-ratio: 5.4;
-    --nav-dropdown-text-scale: 0.82;
   }
 
   .localeSwitcher {
     top: 0.5rem;
     transform: none;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 1023px) {
-  .appHeader {
-    --brand-column-width: minmax(240px, 280px);
-    --logo-size: 38px;
-    --nav-dropdown-width: clamp(12rem, 28vw, 15rem);
-    --nav-dropdown-text-scale: 0.86;
-  }
-
-  .appHeaderCompact {
-    --brand-column-width: minmax(210px, 240px);
-    --logo-size: 32px;
-    --nav-dropdown-width: clamp(10.5rem, 26vw, 13rem);
   }
 }
 </style>
