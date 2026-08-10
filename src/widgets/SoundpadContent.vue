@@ -2,8 +2,10 @@
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AudioContent, AudioItem, GroupState } from '@/core/models/audioContent'
 import { useI18nStore } from '@/stores/i18n'
+import { useBgMusicStore } from '@/stores/bgMusic'
 
 const i18nStore = useI18nStore()
+const bgMusicStore = useBgMusicStore()
 
 const props = withDefaults(
   defineProps<{
@@ -26,6 +28,7 @@ const visibleGroupIds = ref(new Set<string>())
 const groupElements = new Map<string, HTMLElement>()
 
 let player: HTMLAudioElement | null = null
+let playingState: GroupState | null = null
 let observer: IntersectionObserver | null = null
 let isDestroyed = false
 
@@ -52,17 +55,21 @@ const createGroupState = (): GroupState => ({
   resolvePromise: null,
 })
 
-const ensureGroupState = (sectionId: string): GroupState => {
-  const existing = props.groupStates[sectionId]
-  if (existing) return existing
+// заглушка на один кадр: состояния создаёт watch, но первый рендер идёт раньше него
+const EMPTY_GROUP_STATE = createGroupState()
 
-  const state = createGroupState()
-  emit('update:groupStates', { ...props.groupStates, [sectionId]: state })
-  return state
+const syncGroupStates = (audioContent: AudioContent[]): void => {
+  const newIds = audioContent.map(getSectionId).filter((id) => !props.groupStates[id])
+  if (!newIds.length) return
+
+  emit('update:groupStates', {
+    ...props.groupStates,
+    ...Object.fromEntries(newIds.map((id) => [id, createGroupState()])),
+  })
 }
 
 const getGroupState = (audioGroup: AudioContent): GroupState =>
-  ensureGroupState(getSectionId(audioGroup))
+  props.groupStates[getSectionId(audioGroup)] ?? EMPTY_GROUP_STATE
 
 const getTotalCount = (audioGroup: AudioContent): number =>
   audioGroup.meta.itemCount ?? audioGroup.audioItems.length
@@ -88,8 +95,18 @@ const getGroupClass = (audioGroup: AudioContent): string[] => {
   return classes
 }
 
+const stopPlayback = (): void => {
+  if (playingState) playingState.isPlaying = false
+  playingState = null
+  bgMusicStore.normalPlaying()
+}
+
 const getPlayer = (): HTMLAudioElement => {
-  player ??= new Audio()
+  if (!player) {
+    player = new Audio()
+    player.addEventListener('ended', stopPlayback)
+  }
+
   return player
 }
 
@@ -156,8 +173,7 @@ const resolveRandomItem = async (
   return resolveItemAtIndex(audioGroup, state, index)
 }
 
-const resolveGroup = async (audioGroup: AudioContent): Promise<void> => {
-  const state = getGroupState(audioGroup)
+const resolveGroup = async (audioGroup: AudioContent, state: GroupState): Promise<void> => {
   if (state.isFullyResolved || state.resolvePromise)
     return state.resolvePromise ?? Promise.resolve()
 
@@ -189,8 +205,10 @@ const resolveGroup = async (audioGroup: AudioContent): Promise<void> => {
   return state.resolvePromise
 }
 
-const warmRandomPlayableItem = async (audioGroup: AudioContent): Promise<AudioItem | null> => {
-  const state = getGroupState(audioGroup)
+const warmRandomPlayableItem = async (
+  audioGroup: AudioContent,
+  state: GroupState,
+): Promise<AudioItem | null> => {
   if (state.items.length) return state.items[0] ?? null
 
   state.isLoading = true
@@ -207,10 +225,10 @@ const warmRandomPlayableItem = async (audioGroup: AudioContent): Promise<AudioIt
 }
 
 const warmGroup = async (audioGroup: AudioContent): Promise<void> => {
-  const state = getGroupState(audioGroup)
-  if (state.items.length || state.isLoading || state.isFullyResolved) return
+  const state = props.groupStates[getSectionId(audioGroup)]
+  if (!state || state.items.length || state.isLoading || state.isFullyResolved) return
 
-  await warmRandomPlayableItem(audioGroup)
+  await warmRandomPlayableItem(audioGroup, state)
 }
 
 const pickRandomItem = (items: AudioItem[], heardIds: Set<string>): AudioItem | null => {
@@ -224,31 +242,36 @@ const pickRandomItem = (items: AudioItem[], heardIds: Set<string>): AudioItem | 
 const playGroup = async (audioGroup: AudioContent): Promise<void> => {
   if (isMissingGroup(audioGroup)) return
 
-  const state = getGroupState(audioGroup)
+  const state = props.groupStates[getSectionId(audioGroup)]
+  if (!state) return
+
   const now = Date.now()
   if (now - state.lastPlayedAt < props.cooldownMs) return
 
   state.lastPlayedAt = now
 
-  await resolveGroup(audioGroup)
+  await resolveGroup(audioGroup, state)
 
   const item = pickRandomItem(state.items, state.heardIds)
   if (!item) return
 
   const activePlayer = getPlayer()
 
-  state.isPlaying = true
   activePlayer.pause()
   activePlayer.currentTime = 0
   activePlayer.src = item.url
+
+  if (playingState) playingState.isPlaying = false
+  playingState = state
+  state.isPlaying = true
+  bgMusicStore.quietPlaying()
 
   try {
     await activePlayer.play()
     state.heardIds.add(item.id)
   } catch {
     state.error = i18nStore.getMessage.audio.browserBlockedAudio
-  } finally {
-    state.isPlaying = false
+    stopPlayback()
   }
 }
 
@@ -311,6 +334,14 @@ const setupObserver = async (): Promise<void> => {
 }
 
 watch(
+  [() => props.audioContent, () => props.groupStates],
+  ([audioContent]) => {
+    syncGroupStates(audioContent)
+  },
+  { immediate: true },
+)
+
+watch(
   () => props.audioContent,
   () => {
     void setupObserver()
@@ -323,6 +354,7 @@ onBeforeUnmount(() => {
   observer?.disconnect()
   player?.pause()
   player = null
+  stopPlayback()
 })
 </script>
 

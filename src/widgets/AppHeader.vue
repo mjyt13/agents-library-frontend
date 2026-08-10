@@ -330,29 +330,37 @@ watch(
 
 <template>
   <header class="appHeader" :class="headerClass">
-    <button
-      class="localeSwitcher"
-      type="button"
-      @click="i18nStore.setLocale(i18nStore.locale === 'en' ? 'ru' : 'en')"
-    >
-      <img
-        :src="i18nStore.locale === 'en' ? ENG_FLAG : RUS_FLAG"
-        :alt="i18nStore.locale === 'en' ? 'English' : 'Russian'"
-        width="20"
-        height="20"
-      />
-      <span>{{ i18nStore.locale }}</span>
-    </button>
-    <button @click="bgMusicStore.isPlaying ? bgMusicStore.pause() : bgMusicStore.play()" class="localeSwitcher" type="button">
-      {{ bgMusicStore.isPlaying ? 'Pause' : 'Play' }}
-    </button>
+    <div class="headerSide">
+      <RouterLink class="brand" to="/">
+        <img alt="CS Radio Library" class="logo" src="@/assets/logo.png" width="72" height="72" />
+        <div class="brandText">
+          <strong>CS Radio Library</strong>
+        </div>
+      </RouterLink>
 
-    <RouterLink class="brand" to="/">
-      <img alt="CS Radio Library" class="logo" src="@/assets/logo.png" width="72" height="72" />
-      <div class="brandText">
-        <strong>CS Radio Library</strong>
+      <div class="headerActions">
+        <button
+          class="headerAction"
+          type="button"
+          @click="i18nStore.setLocale(i18nStore.locale === 'en' ? 'ru' : 'en')"
+        >
+          <img
+            :src="i18nStore.locale === 'en' ? ENG_FLAG : RUS_FLAG"
+            :alt="i18nStore.locale === 'en' ? 'English' : 'Russian'"
+            width="20"
+            height="20"
+          />
+          <span>{{ i18nStore.locale }}</span>
+        </button>
+        <button
+          class="headerAction"
+          type="button"
+          @click="bgMusicStore.isPlaying ? bgMusicStore.pause() : bgMusicStore.play()"
+        >
+          {{ bgMusicStore.isPlaying ? 'Pause' : 'Play' }}
+        </button>
       </div>
-    </RouterLink>
+    </div>
 
     <nav class="mainNav" aria-label="Main navigation">
       <div
@@ -443,14 +451,13 @@ watch(
   top: 0;
   z-index: 100;
   background: #fff;
-  display: grid;
-  grid-template-columns: var(--brand-column-width) minmax(0, 1fr);
+  display: flex;
+  align-items: center;
   gap: var(--header-gap);
   padding: var(--header-padding-block) var(--header-padding-inline);
   line-height: 1.5;
   border-bottom: 1px solid #e5e5e5;
   transition:
-    grid-template-columns 0.24s ease,
     padding 0.24s ease,
     box-shadow 0.24s ease;
 }
@@ -470,19 +477,27 @@ watch(
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
-.switchers{
+.headerSide {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;  
+  justify-content: center;
+  gap: 0.5rem;
+  width: var(--brand-column-width);
+  min-width: 0;
+  transition: width 0.24s ease;
 }
 
-.localeSwitcher {
-  position: absolute;
-  top: 50%;
-  right: 0.75rem;
-  z-index: 101;
+.headerActions {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+}
+
+.headerAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   padding: 0.3rem 0.6rem;
   border: 1px solid #d2d2d2;
@@ -493,11 +508,11 @@ watch(
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
-  transform: translateY(-50%);
 }
 
-.localeSwitcher:hover {
+.headerAction:hover {
   border-color: #999;
+  transition: all 0.15s ease;
 }
 
 .logo {
@@ -537,10 +552,12 @@ watch(
 }
 
 .mainNav {
+  flex: 1 1 0;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: center;
+  min-width: 0;
   gap: 0.75rem;
 }
 
@@ -571,8 +588,10 @@ watch(
 
 .navDropdown {
   position: relative;
-  width: var(--nav-dropdown-width);
-  transition: width 0.24s ease;
+  flex: 1 1 var(--nav-dropdown-width);
+  min-width: 0;
+  max-width: 32rem;
+  transition: flex-basis 0.24s ease;
 }
 
 .navDropdownButton {
@@ -774,15 +793,21 @@ watch(
 
 @media (max-width: 690px) {
   .appHeader {
-    --brand-column-width: minmax(0, 0.7fr);
-    --nav-dropdown-width: 100%;
     --nav-dropdown-ratio: 5.5;
 
-    grid-template-columns: minmax(0, 1fr);
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .appHeaderCompact {
     --nav-dropdown-ratio: 7;
+  }
+
+  .headerSide {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: auto;
   }
 
   .mainNav {
@@ -791,9 +816,9 @@ watch(
     align-items: stretch;
   }
 
-  .localeSwitcher {
-    top: 0.5rem;
-    transform: none;
+  .navDropdown {
+    flex: 0 0 auto;
+    max-width: none;
   }
 }
 </style>

@@ -3,8 +3,10 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getRandomAudio } from '@/utils/getRandomAudio'
 import { debounce } from '@/utils/debounce'
 import { useI18nStore } from '@/stores/i18n'
+import { useBgMusicStore } from '@/stores/bgMusic'
 
 const i18nStore = useI18nStore()
+const bgMusicStore = useBgMusicStore()
 
 const NAV_VIDEO_FALLBACK_URL = '/pet2_final.mp4'
 const NAV_IMAGE_FALLBACK_URL = '/mock.webp'
@@ -14,24 +16,22 @@ const isVideoReady = ref(false)
 
 const player = new Audio()
 player.preload = 'auto'
+player.addEventListener('ended', () => bgMusicStore.normalPlaying())
 
 let preparedUrl: string | null = null
 
 const playRandomAudio = debounce(
   async () => {
-    if (preparedUrl) {
-      preparedUrl = null
-      player.currentTime = 0
-      void player.play()
-      return
+    if (!preparedUrl) {
+      const url = await getRandomAudio()
+      if (!url) return
+      player.src = url
     }
+    preparedUrl = null
 
-    const url = await getRandomAudio()
-    if (!url) return
-
+    bgMusicStore.quietPlaying()
     player.pause()
     player.currentTime = 0
-    player.src = url
     void player.play()
   },
   250,

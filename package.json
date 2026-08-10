@@ -33,6 +33,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.2",
     "@playwright/test": "^1.57.0",
     "@prettier/plugin-oxc": "^0.0.5",
